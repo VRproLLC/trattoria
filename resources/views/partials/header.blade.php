@@ -16,5 +16,5 @@
                 @endforeach
             </div>
         </div>
-    </div>
+    </div> 
 </header>

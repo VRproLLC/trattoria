@@ -1001,4 +1001,12 @@ $(document).ready(function () {
             }
         })
     });
+    
+    $('input[name="delivery"]').click(function(){
+        if($(this).val() == 1){
+            $('.show_hide_field_addr').slideDown(100);
+        } else {
+            $('.show_hide_field_addr').slideUp(100);
+        }
+    })
 });
