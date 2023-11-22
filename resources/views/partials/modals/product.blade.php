@@ -30,7 +30,7 @@
                     <img src="{{asset('image/plus.svg')}}" alt="">
                 </div>
             </div>
-            <a href="" data-id-product="{{$product->id}}" data-link="{{route('order.add_to_cart')}}" class="add_to_cart_button">{{trans('main.add_to_cart')}}</a>
+            <a href="" data-id-product="{{$product->id}}" data-link="{{route('order.add_to_cart')}}" class="add_to_cart_button"><img src="{{asset('image/cart_white.svg')}}" alt="">{{trans('main.add_to_cart')}}</a>
         </div>
     </div>
 </div>
