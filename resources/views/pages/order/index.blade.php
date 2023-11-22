@@ -129,7 +129,7 @@
                             <div class="show_hide_field_addr">
                                 <p class="title_other_page">Адрес доставки:</p>
                                 <div class="wrap_input_delivery_enter">
-                                    <input type="text" class="">
+                                    <input type="text" class="" id="google_autocomplete_input">
                                     <div class="toggle_show_addr">
 
                                     </div>
@@ -208,26 +208,27 @@
                     </form>
                 </div>
                 @else
-                @if(!session()->has('prevent_back'))
-                <div class="cart_image_red_text">
-                    <img src="{{asset('image/icon_empty_basket.svg')}}" alt="">
-                    <p class="big_red_text">{{trans('main.cart_empty_red')}}</p>
-                    <a href="{{route('main')}}" class="big_red_link">{{trans('main.main_step')}}</a>
-                </div>
+                    @if(!session()->has('prevent_back'))
+                        <div class="cart_image_red_text">
+                            <img src="{{asset('image/icon_empty_basket.svg')}}" alt=""><p class="big_red_text">{{trans('main.cart_empty_red')}}</p>
+                            <a href="{{route('main')}}" class="big_red_link">{{trans('main.main_step')}}</a>
+                        </div>
 
-                @endif
-                @if(session()->has('prevent_back'))
-                <div class="cart_image_red_text">
-                    <img src="{{asset('image/icon_success_basket.svg')}}" alt="">
-                    <p class="big_red_text">{{trans('main.cart_success_text_empty')}}</p>
-                    <a href="{{route('main')}}" class="big_red_link">{{trans('main.next_after_complete_order')}}</a>
-                </div>
-                @endif
+                    @endif
+                    @if(session()->has('prevent_back'))
+                        <div class="cart_image_red_text">
+                            <img src="{{asset('image/icon_success_basket.svg')}}" alt="">
+                            <p class="big_red_text">{{trans('main.cart_success_text_empty')}}</p>
+                            <a href="{{route('main')}}" class="big_red_link">{{trans('main.next_after_complete_order')}}</a>
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>
     </div>
 </div>
+<script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQwPhADcjl2Z0SUT7D-vRfd-0xTB-d76w&libraries=visualization,geometry,drawing,places"></script>
 <script>
     var data = new Date();
     var hours = data.getHours();
@@ -292,6 +293,18 @@
 
         }
     });
-
+    const initGoogleMapAutocomplete = () => {
+        const input = document.getElementById("google_autocomplete_input");
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: ["ua"] },
+            fields: ["address_components", "geometry"],
+            strictBounds: false,
+            types: ["address"],
+        });
+        autocomplete.addListener("place_changed", function() {
+            const place = autocomplete.getPlace();
+        });
+    }
+    initGoogleMapAutocomplete();
 </script>
 @endsection

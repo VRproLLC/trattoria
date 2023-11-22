@@ -47,8 +47,8 @@
                                                 @endif
                                             </div>
                                             <p class="new_name_address"><img
-                                                    src="{{asset('image/localization_gray.svg')}}"
-                                                    alt="">{{$organization->address}}</p>
+                                                        src="{{asset('image/localization_gray.svg')}}"
+                                                        alt="">{{$organization->address}}</p>
                                             <p class="new_time_work"><img src="{{asset('image/error_I.svg')}}"
                                                                           alt="">{{trans('main.order_not')}}</p>
                                             <p class="new_info_point"><img src="{{asset('image/info_icon.svg')}}"
@@ -128,9 +128,7 @@
 
                 }
             });
-
         }
     </script>
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQwPhADcjl2Z0SUT7D-vRfd-0xTB-d76w&libraries=visualization,geometry,drawing,places&callback=initMap"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQwPhADcjl2Z0SUT7D-vRfd-0xTB-d76w&libraries=visualization,geometry,drawing,places&callback=initMap"></script>
 @endsection

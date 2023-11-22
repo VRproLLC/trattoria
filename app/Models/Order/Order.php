@@ -23,7 +23,8 @@ class Order extends Model
         'iiko_id',
         'comment',
         'timestamp_at',
-        'iiko_order_number'
+        'iiko_order_number',
+        'address',
     ];
 
     protected $dates = ['deleted_at'];
@@ -32,22 +33,22 @@ class Order extends Model
         'timestamp_at' => 'array',
     ];
 
-    public function items()
+    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(OrderItem::class, 'order_id');
     }
 
-    public function organization()
+    public function organization(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
     }
 
-    public function payment_type()
+    public function payment_type(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(PaymentType::class, 'payment_type_id');
     }
 
-    public function user()
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
