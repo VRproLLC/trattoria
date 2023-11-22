@@ -13,6 +13,7 @@
             </p>
             <div data-product-id="{{$product->id}}" data-link="/order/add_to_cart" class="button_pseudo_add_cart new_add_buttons_to_cart">
                 <img src="{{asset('image/cart_white.svg')}}" alt="">
+                <p>У кошик</p>
             </div>
         </div>
     </div>
