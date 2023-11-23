@@ -552,6 +552,9 @@ form.search_form button {
 
 .append_addres_block > .search_parent_block.new_parent_search {
     display: block;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #C5CADD;
 }
 
 .mini_new_dop_text {
@@ -584,8 +587,8 @@ div.search_parent_block.new_parent_search .new_name_address {
     margin-right: 15px;
 }
 
-.append_addres_block a div,
-.append_addres_block div div {
+.append_addres_block a div:not(.image_zvd),
+.append_addres_block div div:not(.image_zvd) {
     width: calc(100% - 50px);
     display: -webkit-box;
     display: -ms-flexbox;
@@ -617,6 +620,7 @@ div.search_parent_block.new_parent_search .new_name_address {
 .image_zvd img {
     width: 100%;
     max-width: 100%;
+    margin-right: 0px;
 }
 
 .new_name_address {
@@ -3493,4 +3497,60 @@ button.delete_prod svg {
     border: none;
     padding: 0px;
     background: transparent;
+}
+
+.title_name_org {
+    color: #4E2C28;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+}
+
+.title_description {
+    color: #34394B;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+}
+
+.home_addr_line {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: #7A7F93;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: -0.3px;
+    margin-bottom: 16px;
+}
+
+.home_addr_line img, .wrap_wrk_infos img{
+    height: 16px;
+    width: 16px;
+    margin-right: 8px;
+}
+
+.append_addres_block a div.line_new_info, .append_addres_block div div.line_new_info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.wrap_wrk_infos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 10px;
+    background: #EDEFF6;
 }
