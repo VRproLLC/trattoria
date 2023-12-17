@@ -92,8 +92,12 @@
                                 <div class="image_zvd">
                                     <img src="{{asset($organization->images)}}" alt="">
                                 </div>
-                                <p class="new_name_address"><img src="{{asset('image/localization.svg')}}" alt="">{{$organization->address}}</p>
-                                <p class="new_time_work"><img src="{{asset('image/time_work.svg')}}" alt="">{{$organization->workTime}}</p>
+                                @if($organization->address !== null)
+                                    <p class="new_name_address"><img src="{{asset('image/localization.svg')}}" alt="">{{$organization->address}}</p>
+                                @endif
+                                @if($organization->workTime !== null)
+                                    <p class="new_time_work"><img src="{{asset('image/time_work.svg')}}" alt="">{{$organization->workTime}}</p>
+                                @endif
                                 <!--
                                 <div>
                                     <img src="{{asset('image/01.svg')}}" alt="">
@@ -115,12 +119,12 @@
                                 <p class="title_other_page">Доставка:</p>
                                 <div class="line_wrap_checkbox time_check">
                                     <label class="line_one_checkbox">
-                                        <input type="radio" name="delivery" value="1" {{old('time_issue', 1)==1 ? 'checked' : '' }}>
+                                        <input type="radio" name="is_delivery" value="1" {{old('delivery', 1) == 1 ? 'checked' : '' }}>
                                         <span></span>
                                         <p>Доставка</p>
                                     </label>
                                     <label class="line_one_checkbox">
-                                        <input type="radio" name="delivery" value="2" {{old('time_issue')==2 ? 'checked' : '' }}>
+                                        <input type="radio" name="is_delivery" value="2" {{old('delivery') == 2 ? 'checked' : '' }}>
                                         <span></span>
                                         <p>Самовывоз</p>
                                     </label>
@@ -129,7 +133,7 @@
                             <div class="show_hide_field_addr">
                                 <p class="title_other_page">Адрес доставки:</p>
                                 <div class="wrap_input_delivery_enter">
-                                    <input type="text" class="" id="google_autocomplete_input">
+                                    <input type="text" class="" name="address" id="google_autocomplete_input">
                                     <div class="toggle_show_addr">
 
                                     </div>
@@ -137,7 +141,7 @@
                                 <div class="total_sum_delivery">
                                     <p>Стоимость доставки:</p>
                                     <div class="apend_sum_del">
-                                        <span>0</span>грн
+                                        <span class="sum_delivery">0</span> грн
                                     </div>
                                 </div>
                             </div>
@@ -161,30 +165,30 @@
                                     @include('partials.errors.default', ['name' => 'time'])
                                 </div>
                             </div>
-                            <div class="issue_time" style="display: none">
+                            <div class="issue_time">
                                 <p class="title_other_page">{{trans('main.method_pay')}}:</p>
                                 <div class="line_wrap_checkbox">
                                     @if(empty($order->payment_type_id))
-                                    @foreach($organization->payment_types as $payment_type)
-                                    <label class="line_one_checkbox">
-                                        <input type="radio" name="payment_type" {{$loop->first ? 'checked' : ''}} value="{{$payment_type->id}}">
-                                        <span></span>
-                                        <p>{{$payment_type->name}}</p>
-                                    </label>
-                                    @endforeach
+                                        @foreach($organization->payment_types->where('isDeleted', 0) as $payment_type)
+                                            <label class="line_one_checkbox">
+                                                <input class="pay_cash_card" type="radio" name="payment_type" {{$loop->first ? 'checked' : ''}} value="{{$payment_type->id}}" data-pay="{{ $payment_type->code }}">
+                                                <span></span>
+                                                <p>{{$payment_type->name}}</p>
+                                            </label>
+                                        @endforeach
                                     @else
-                                    @foreach($organization->payment_types as $payment_type)
-                                    <label class="line_one_checkbox">
-                                        <input type="radio" name="payment_type" {{$payment_type->id == $order->payment_type_id ? 'checked' : ''}} value="{{$payment_type->id}}">
-                                        <span></span>
-                                        <p>{{$payment_type->name}}</p>
-                                    </label>
-                                    @endforeach
+                                        @foreach($organization->payment_types->where('isDeleted', 0) as $payment_type)
+                                            <label class="line_one_checkbox">
+                                                <input class="pay_cash_card" type="radio" name="payment_type" {{$payment_type->id == $order->payment_type_id ? 'checked' : ''}} value="{{$payment_type->id}}" data-pay="{{ $payment_type->code }}">
+                                                <span></span>
+                                                <p>{{$payment_type->name}}</p>
+                                            </label>
+                                        @endforeach
                                     @endif
                                 </div>
                                 @include('partials.errors.default', ['name' => 'payment_type'])
                             </div>
-                            <button class="submit_checkout_button" type="submit">
+                            <button class="submit_checkout_button show_hide_field_send" type="submit">
                                 <div class="lds-spinner">
                                     <div></div>
                                     <div></div>
@@ -200,7 +204,24 @@
                                     <div></div>
                                 </div>{{trans('main.subscribe')}}
                             </button>
-                            <!--                            Кнопка очистки козины-->
+
+                            <a class="submit_checkout_button show_hide_field_send_pay" style="display: none" href="{{ route('order.fondy', ['id' => $order->id]) }}">
+                                <div class="lds-spinner">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>{{trans('main.pay_button')}}
+                            </a>
+
                             <div class="red_remove_new_order_cart">
                                 {{trans('main.clear_cart_button')}}
                             </div>
@@ -293,6 +314,30 @@
 
         }
     });
+
+
+    @if($organization)
+
+    const latitude = '{{ $organization->latitude }}'
+    const longitude = '{{ $organization->longitude }}'
+
+    degreesToRadians = (degrees) => {
+        return degrees * Math.PI / 180;
+    }
+    calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const earthRadiusKm = 6371;
+        const dLat = degreesToRadians(lat2 - lat1);
+        const dLon = degreesToRadians(lon2 - lon1);
+
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return earthRadiusKm * c;
+    }
+
     const initGoogleMapAutocomplete = () => {
         const input = document.getElementById("google_autocomplete_input");
         const autocomplete = new google.maps.places.Autocomplete(input, {
@@ -303,8 +348,20 @@
         });
         autocomplete.addListener("place_changed", function() {
             const place = autocomplete.getPlace();
+
+            if(place.geometry && place.geometry.location) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+
+                const distance = calculateDistance(lat, lng, latitude, longitude);
+
+                if(distance > 0) {
+                    document.querySelector('.sum_delivery').textContent = Math.round(distance * 8);
+                }
+            }
         });
     }
     initGoogleMapAutocomplete();
+    @endif
 </script>
 @endsection

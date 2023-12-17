@@ -26,7 +26,11 @@ class EventController extends Controller
      */
     public function index()
     {
-        $events = UserEvent::where('user_id', auth()->id())->latest()->limit(20)->get();
+        $events = UserEvent::query()
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->limit(20)
+            ->get();
 
         return view('pages.event.index', compact('events'));
     }

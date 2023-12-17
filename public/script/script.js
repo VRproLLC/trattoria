@@ -1001,12 +1001,22 @@ $(document).ready(function () {
             }
         })
     });
-    
-    $('input[name="delivery"]').click(function(){
+
+    $('input[name="is_delivery"]').click(function(){
         if($(this).val() == 1){
             $('.show_hide_field_addr').slideDown(100);
         } else {
             $('.show_hide_field_addr').slideUp(100);
+        }
+    })
+
+    $('input[name="payment_type"]').click(function(){
+        if($(this).data('pay') === 'FONDY'){
+            $('.show_hide_field_send').slideUp(100);
+            $('.show_hide_field_send_pay').slideDown(100);
+        } else {
+            $('.show_hide_field_send').slideDown(100);
+            $('.show_hide_field_send_pay').slideUp(100);
         }
     })
 });

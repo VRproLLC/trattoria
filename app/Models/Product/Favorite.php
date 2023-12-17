@@ -13,7 +13,7 @@ class Favorite extends Model
         'product_id',
     ];
 
-    public function product()
+    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Product::class);
     }

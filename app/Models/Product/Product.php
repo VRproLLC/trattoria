@@ -2,6 +2,7 @@
 
 namespace App\Models\Product;
 
+use App\Models\CategoryPay;
 use App\Models\Organization;
 use App\Models\Translations\LocalizableModel;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,7 @@ class Product extends LocalizableModel
         'weight',
         'image',
         'sort',
+        'categoryPayId',
     ];
 
     /**
@@ -50,7 +52,7 @@ class Product extends LocalizableModel
         return $this->attributes['weight'];
     }
 
-    public function getIsFavoriteAttribute()
+    public function getIsFavoriteAttribute(): int
     {
         if(auth()->check()){
             $favorite = Favorite::where('product_id', $this->attributes['id'])->where('organization_id', Cookie::get('organization_id', 0))->where('user_id', auth()->id())->first();
@@ -70,13 +72,18 @@ class Product extends LocalizableModel
         return asset($this->attributes['image']);
     }
 
-    public function organization()
+    public function organization(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
     }
 
-    public function category()
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function pay_category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(CategoryPay::class, 'categoryPayId');
     }
 }

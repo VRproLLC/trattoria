@@ -5,15 +5,11 @@ namespace App\Models\Product;
 use App\Models\Organization;
 use App\Models\Translations\LocalizableModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends LocalizableModel
 {
-
-    /**
-     * Localized attributes
-     *
-     * @var array
-     */
     protected $localizable = ['name', 'description'];
 
     protected $fillable = [
@@ -25,12 +21,16 @@ class Category extends LocalizableModel
         'parentGroup',
     ];
 
-    public function products()
+    public function products(): HasMany
     {
-        return $this->hasMany(Product::class, 'category_id')->where('isIncludedInMenu', 1)->where('isDeleted', 0)->orderBy('sort');
+        return $this->hasMany(Product::class, 'category_id')
+            ->where('isIncludedInMenu', 1)
+            ->where('isDeleted', 0)
+            ->whereNotNull('image')
+            ->orderBy('sort');
     }
 
-    public function organization()
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
     }

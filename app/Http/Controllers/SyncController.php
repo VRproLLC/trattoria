@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CategoryPay;
 use App\Models\IikoAccount;
 use App\Models\Organization;
 use App\Models\PaymentType;
@@ -29,24 +30,24 @@ class SyncController extends Controller
         })->get();
 
         foreach ($organizations as $organization) {
-            $this->category($organization);
+            $this->productCategories($organization);
         }
 
-        foreach ($organizations as $organization) {
-            $this->product($organization);
-        }
+         foreach ($organizations as $organization) {
+             $this->category($organization);
+         }
 
-        foreach ($organizations as $organization) {
-            $this->payment_type($organization);
-        }
+         foreach ($organizations as $organization) {
+             $this->product($organization);
+         }
 
-        foreach ($organizations as $organization) {
-            $this->stop_lists($organization);
+         foreach ($organizations as $organization) {
+             $this->payment_type($organization);
+         }
+
+         foreach ($organizations as $organization) {
+             $this->stop_lists($organization);
         }
-//
-//        foreach ($organizations as $organization){
-//            $this->terminals($organization);
-//        }
     }
 
     public function organizations($account_id, $login, $password)
@@ -62,21 +63,41 @@ class SyncController extends Controller
             $organization->ikko_account_id = $account_id;
             $organization->iiko_id = $iiko_organization->id;
 //            $organization->isActive = 0;
-//            $organization->latitude = $iiko_organization->latitude;
-//            $organization->longitude = $iiko_organization->longitude;
+            $organization->latitude = $iiko_organization->latitude ?? null;
+            $organization->longitude = $iiko_organization->longitude?? null;
             $organization->fullName = $iiko_organization->name;
-//            $organization->description = $iiko_organization->description;
-            //  $organization->address = $iiko_organization->restaurantAddress;
+            $organization->description = $iiko_organization->description?? null;
+            $organization->address = $iiko_organization->restaurantAddress?? null;
             $organization->name = $iiko_organization->name;
-//            $organization->organizationType = $iiko_organization->organizationType;
-//            $organization->timezone = $iiko_organization->timezone;
-//            $organization->workTime = $iiko_organization->workTime;
-//            $organization->email = $iiko_organization->contact->email;
-//            $organization->location = $iiko_organization->contact->location;
-//            $organization->phone = $iiko_organization->contact->phone;
+            $organization->organizationType = $iiko_organization->organizationType?? null;
+            $organization->timezone = $iiko_organization->timezone?? null;
+            $organization->workTime = $iiko_organization->workTime?? null;
+            $organization->email = $iiko_organization->contact->email?? null;
+            $organization->location = $iiko_organization->contact->location?? null;
+            $organization->phone = $iiko_organization->contact->phone?? null;
             $organization->save();
         }
         return true;
+    }
+
+
+    public function productCategories($organization)
+    {
+        $iiko = new IikoApi($organization->account->login, $organization->account->password, $organization->iiko_id);
+        $nomenclature = $iiko->getProducts();
+
+
+        dd($nomenclature);
+
+        foreach ($nomenclature->productCategories as $iiko_category) {
+            CategoryPay::updateOrCreate([
+                'organization_id' => $organization->id,
+                'iiko_id' => $iiko_category->id,
+            ],[
+                'isDeleted' => $iiko_category->isDeleted,
+                'name' => $iiko_category->name,
+            ]);
+        }
     }
 
     public function category($organization)
@@ -143,8 +164,19 @@ class SyncController extends Controller
             $product->fiberAmount = 0;
             $product->fiberFullAmount = 0;
             $product->isIncludedInMenu = 1;
-//            $product->weight = $iiko_product->weight;
+            $product->weight = $iiko_product->weight ?? null;
             $product->sort = $iiko_product->order;
+
+
+            if($iiko_product->productCategoryId !== null){
+                $payCategory = CategoryPay::query()
+                    ->where('iiko_id', $iiko_product->productCategoryId)
+                    ->first();
+
+                if(isset($payCategory->id)){
+                    $product->categoryPayId = $payCategory->id;
+                }
+            }
 
             if (is_array($iiko_product->imageLinks) && count($iiko_product->imageLinks) > 0) {
                 $url = $iiko_product->imageLinks[0];

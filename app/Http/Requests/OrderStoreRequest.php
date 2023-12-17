@@ -29,6 +29,8 @@ class OrderStoreRequest extends FormRequest
 //            'time_issue' => 'required|numeric|min:1|max:2',
             'payment_type' => 'nullable|exists:payment_types,id',
             'comment' => 'nullable|string|max:200',
+            'address' => 'nullable|string|max:191',
+            'is_delivery' => 'integer'
         ];
 //        if(request('time_issue') == 2){
 //            $rules['time'] = 'required|date_format:H:i';

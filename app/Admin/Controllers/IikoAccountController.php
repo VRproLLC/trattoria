@@ -28,7 +28,7 @@ class IikoAccountController extends AdminController
 
         $grid->column('id', __('#'));
         $grid->column('description', __('Описание'));
-        $grid->column('is_iiko', __('Эта точка использует iiko'))->switch();
+        $grid->column('is_iiko', __('Эта точка использует Syrve'))->switch();
 
         return $grid;
     }

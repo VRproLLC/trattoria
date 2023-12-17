@@ -15,7 +15,7 @@ class AddColumnAddressOrders extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->string('address')->nullable();
-
+            $table->tinyInteger('is_delivery')->default(2);
         });
     }
 
@@ -28,6 +28,7 @@ class AddColumnAddressOrders extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->dropColumn('address');
+            $table->dropColumn('is_delivery');
         });
     }
 }

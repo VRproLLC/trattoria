@@ -13,6 +13,7 @@ use App\Models\Product\Product;
 use App\Notifications\InProgressNotification;
 use App\Notifications\OrderCancellationNotification;
 use App\Notifications\OrderFinishNotification;
+use App\Services\CalculatorService;
 use App\Services\Iiko\Iiko;
 use Carbon\Carbon;
 use Encore\Admin\Facades\Admin;
@@ -20,6 +21,7 @@ use Encore\Admin\Layout\Column;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Layout\Row;
 use App\Events\NewOrderEvent;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Request;
@@ -42,7 +44,7 @@ class DashboardController extends Controller
             ]));
     }
 
-    public function show($id)
+    public function show(int $id)
     {
         $organization = Organization::where('id', $id)->firstOrFail();
 
@@ -51,10 +53,14 @@ class DashboardController extends Controller
 
         $in_process_orders = Order::where('organization_id', $organization->id)->where('order_status',
             OrderEnum::$IN_PROCESS)->latest()->get();
+
         $finished_orders = Order::where('organization_id', $organization->id)->where('order_status',
             OrderEnum::$FINISHED)->latest()->get();
 
-        return view('admin.order.index', compact('organization', 'new_orders', 'in_process_orders', 'finished_orders'));
+        $delivery_orders = Order::where('organization_id', $organization->id)->where('order_status',
+            OrderEnum::$DELIVERED)->latest()->get();
+
+        return view('admin.order.index', compact('organization', 'new_orders', 'in_process_orders', 'finished_orders', 'delivery_orders'));
     }
 
 
@@ -85,7 +91,15 @@ class DashboardController extends Controller
         $finished_orders = Order::where('organization_id', $organization->id)->where('order_status',
             OrderEnum::$FINISHED)->latest()->get();
 
-        return view('admin.order.content', compact('organization', 'new_orders', 'in_process_orders', 'finished_orders'));
+
+        $delivery_orders = Order::query()
+            ->where('organization_id', $organization->id)
+            ->where('order_status', OrderEnum::$DELIVERED)
+            ->where('is_delivery', OrderEnum::$DELIVERY_YES)
+            ->latest()
+            ->get();
+
+        return view('admin.order.content', compact('organization', 'new_orders', 'in_process_orders', 'finished_orders', 'delivery_orders'));
     }
 
     public function archive()
@@ -101,7 +115,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function remove_order(): \Illuminate\Http\JsonResponse
+    public function remove_order(): JsonResponse
     {
         request()->validate([
             'id' => 'required'
@@ -119,7 +133,6 @@ class DashboardController extends Controller
             $data = $iiko->closeOrder($order);
 
             Notification::send($order->user, new OrderCancellationNotification($order));
-
         }
 
         return response()->json(['success' => 'true', 'order' => $data]);
@@ -135,7 +148,7 @@ class DashboardController extends Controller
         return view('partials.modals.admin_order_detail', compact('order'));
     }
 
-    public function submit_order(): \Illuminate\Http\JsonResponse
+    public function submit_order(): JsonResponse
     {
         $data = request()->validate([
             'id' => 'required'
@@ -154,16 +167,30 @@ class DashboardController extends Controller
         return response()->json(['success' => 'true']);
     }
 
-    public function finish_order(): \Illuminate\Http\JsonResponse
+    public function finish_order(): JsonResponse
     {
         $data = request()->validate([
             'id' => 'required'
         ]);
         $order = Order::where('id', $data['id'])->first();
+
+        /**
+         * Если заказ был, на доставку  то пишем что готов к доставке
+         */
+        if($order->is_delivery === 1 && OrderEnum::$IN_PROCESS === $order->order_status){
+            $order->order_status = OrderEnum::$DELIVERED;
+            $order->timestamp_at = collect($order->timestamp_at)->merge([
+                'delivered' => Carbon::now()->toDateTimeString()
+            ]);
+            $order->save();
+            return response()->json(['success' => 'true']);
+        }
+
         $order->order_status = OrderEnum::$FINISHED;
         $order->timestamp_at = collect($order->timestamp_at)->merge([
             'finished' => Carbon::now()->toDateTimeString()
         ]);
+
         $order->save();
 
         if ($order->order_status == OrderEnum::$FINISHED) {
@@ -174,7 +201,7 @@ class DashboardController extends Controller
         return response()->json(['success' => 'true']);
     }
 
-    public function give_away_order(): \Illuminate\Http\JsonResponse
+    public function give_away_order(): JsonResponse
     {
         $data = request()->validate([
             'id' => 'required'
@@ -185,6 +212,7 @@ class DashboardController extends Controller
         $order->timestamp_at = collect($order->timestamp_at)->merge([
             'completion' => Carbon::now()->toDateTimeString()
         ]);
+
         $order->save();
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
@@ -202,13 +230,14 @@ class DashboardController extends Controller
         return view('partials.modals.admin_order_edit', compact('order'));
     }
 
-    public function update(): \Illuminate\Http\JsonResponse
+    public function update(): JsonResponse
     {
         $data = request()->validate([
             'order_id' => 'required',
             'order_item' => 'required',
             'iiko_order_number' => 'required',
         ]);
+
         $order = Order::where('id', $data['order_id'])->firstOrFail();
         $order->iiko_order_number = $data['iiko_order_number'];
         $order->save();
@@ -222,7 +251,6 @@ class DashboardController extends Controller
                 $item->save();
             }
         }
-
         $order_controller = new OrderController();
         $order_controller->calculate_full_price($order);
 
@@ -245,7 +273,9 @@ class DashboardController extends Controller
         return view('partials.modals.admin_order_add_product', compact('order', 'categories'));
     }
 
-    public function add_product_save(): \Illuminate\Http\JsonResponse
+    public function add_product_save(
+        CalculatorService $service
+    ): JsonResponse
     {
         $data = request()->validate([
             'order_id' => 'required',
@@ -256,22 +286,25 @@ class DashboardController extends Controller
 
         foreach ($data['product'] as $key => $value) {
             if ($value == 1) {
-                $order_item = OrderItem::where('order_id', $order->id)->where('product_id', $key)->first();
-                if (!$order_item) {
-                    $order_item = new OrderItem();
-                }
                 $product = Product::where('id', $key)->firstOrFail();
 
-                $order_item->order_id = $order->id;
-                $order_item->product_id = $product->id;
-                $order_item->amount = 1;
-                $order_item->price_per_one = $product->price;
-                $order_item->save();
+                if(isset($product->id)) {
+                    $order_item = OrderItem::where('order_id', $order->id)->where('product_id', $key)->first();
+
+                    if (empty($order_item)) {
+                        $order_item = new OrderItem();
+                    }
+
+                    $order_item->order_id = $order->id;
+                    $order_item->product_id = $product->id;
+                    $order_item->amount = 1;
+                    $order_item->price_per_one = $product->price;
+                    $order_item->save();
+                }
             }
         }
 
-        $order_controller = new OrderController();
-        $order_controller->calculate_full_price($order);
+        $service->calculate_full_price($order);
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
 

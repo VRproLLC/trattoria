@@ -9,10 +9,11 @@ use App\User;
 use Carbon\Carbon;
 use Encore\Admin\Facades\Admin;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-
     protected $fillable = [
         'organization_id',
         'uuid',
@@ -25,6 +26,7 @@ class Order extends Model
         'timestamp_at',
         'iiko_order_number',
         'address',
+        'is_delivery'
     ];
 
     protected $dates = ['deleted_at'];
@@ -33,22 +35,22 @@ class Order extends Model
         'timestamp_at' => 'array',
     ];
 
-    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'order_id');
     }
 
-    public function organization(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');
     }
 
-    public function payment_type(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function payment_type(): BelongsTo
     {
         return $this->belongsTo(PaymentType::class, 'payment_type_id');
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

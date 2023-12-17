@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Models\Order\Order;
+use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Organization extends Model
 {
@@ -26,19 +29,24 @@ class Organization extends Model
         'phone',
     ];
 
-    public function account()
+    public function account(): BelongsTo
     {
         return $this->belongsTo(IikoAccount::class, 'ikko_account_id');
     }
 
-    public function payment_types()
+    public function payment_types(): HasMany
     {
         return $this->hasMany(PaymentType::class, 'organization_id');
     }
 
-    public function order()
+    public function order(): HasMany
     {
         return $this->hasMany(Order::class, 'organization_id');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'organization_id');
     }
 
     public function getDeltaDistanceAttribute()

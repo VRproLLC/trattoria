@@ -10,6 +10,7 @@
                 <th scope="col">Готовятся</th>
                 <th scope="col">Готовы к выдаче</th>
                 <th scope="col">Выполнены</th>
+                <th scope="col">Доставка</th>
             </tr>
             </thead>
             <tbody>
@@ -23,6 +24,7 @@
                     <td>{{ $item->order->where('order_status', App\Enums\OrderEnum::$IN_PROCESS)->where('created_at', '>',  \Carbon\Carbon::today())->count() }}</td>
                     <td>{{ $item->order->where('order_status', App\Enums\OrderEnum::$FINISHED)->where('created_at', '>',  \Carbon\Carbon::today())->count() }}</td>
                     <td>{{ $item->order->where('order_status', App\Enums\OrderEnum::$GIV_AWAY)->where('created_at', '>',  \Carbon\Carbon::today())->count() }}</td>
+                    <td>{{ $item->order->where('order_status', App\Enums\OrderEnum::$DELIVERED)->where('created_at', '>',  \Carbon\Carbon::today())->count() }}</td>
                 </tr>
             @endforeach
             </tbody>

@@ -11,7 +11,7 @@ return [
     | login page.
     |
     */
-    'name' => 'Bufet',
+    'name' => 'Trattoria',
 
     /*
     |--------------------------------------------------------------------------
@@ -22,7 +22,7 @@ return [
     | `img` tag, eg '<img src="http://logo-url" alt="Admin logo">'.
     |
     */
-    'logo' => '<b>Bufet</b> admin',
+    'logo' => '<b>Trattoria</b> admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ return [
     | '<img src="http://logo-url" alt="Admin logo">'.
     |
     */
-    'logo-mini' => '<b>B</b>',
+    'logo-mini' => '<b>T</b>',
 
     /*
     |--------------------------------------------------------------------------

@@ -5,6 +5,7 @@ namespace App\Admin\Controllers;
 use App\Models\Language;
 use App\Models\Organization;
 use App\Models\Product\Category;
+use Carbon\Carbon;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
@@ -35,7 +36,9 @@ class CategoryController extends AdminController
         $grid->column('isIncludedInMenu', __('Отображать в меню'))->switch();
         $grid->column('sort', __('Сортировка'))->editable();
         $grid->column('parentGroup', __('Родительская категория'));
-        $grid->column('created_at', __('Дата создания'));
+        $grid->column('created_at', __('Дата создания'))->display(function ($created_at) {
+            return Carbon::parse($created_at)->format('d.m.Y H:i:s');
+        });
         $grid->column('isDeleted', __('Удалено'))->switch();
         return $grid;
     }

@@ -31,11 +31,11 @@ class AccountController extends Controller
      */
     public function index()
     {
-//        $orders = Order::where('user_id', auth()->id())->whereIn('order_status', OrderEnum::$ACTIVE_STATUSES)->latest()->get();
-        $orders = Order::where('user_id', auth()->id())->where('order_status', '<>', 0)->limit(20)->latest()->get();
+        $orders = Order::where('user_id', auth()->id())
+            ->where('order_status', '<>', OrderEnum::$FILLS_ORDER)
+            ->limit(20)->latest()->get();
 
         $google = 'https://www.google.com/maps/@';
-
 
         return view('pages.account.index', compact('orders', 'google'));
     }

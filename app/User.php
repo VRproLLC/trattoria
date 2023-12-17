@@ -2,8 +2,10 @@
 
 namespace App;
 
+use App\Enums\OrderEnum;
 use App\Models\Order\Order;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -51,13 +53,15 @@ class User extends Authenticatable
         return $this->onsignal_token;
     }
 
-    public function orders(){
+    public function orders(): HasMany
+    {
         return $this->hasMany(Order::class, 'user_id', 'id');
     }
 
-    public function order(){
+    public function order(): HasOne
+    {
         return $this->hasOne(Order::class, 'user_id', 'id')
-            ->where('order_status', \App\Enums\OrderEnum::$GIV_AWAY)
+            ->where('order_status', OrderEnum::$GIV_AWAY)
             ->orderBy('created_at', 'desc');
     }
 }

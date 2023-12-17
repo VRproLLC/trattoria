@@ -10,6 +10,7 @@
     "require": {
         "php": "^7.2.5",
         "ext-json": "*",
+        "cloudipsp/php-sdk-v2": "1.0.9.1",
         "daaner/turbosms": "^1.35",
         "encore/laravel-admin": "1.*",
         "fideloper/proxy": "^4.2",
@@ -19,6 +20,7 @@
         "ixudra/curl": "^6.22",
         "laravel-notification-channels/onesignal": "^2.3",
         "laravel/framework": "^7.0",
+        "laravel/telescope": "3.5.1",
         "laravel/tinker": "^2.0",
         "laravel/ui": "2.4",
         "norkunas/onesignal-php-api": "^2.10",

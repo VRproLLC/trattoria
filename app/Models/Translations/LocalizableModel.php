@@ -4,6 +4,8 @@ namespace App\Models\Translations;
 
 use App\Models\Language;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 abstract class LocalizableModel extends Model
@@ -62,7 +64,7 @@ abstract class LocalizableModel extends Model
      * This model's translations
      *
      */
-    public function translations()
+    public function translations(): HasMany
     {
         $modelName = class_basename(get_class($this));
 

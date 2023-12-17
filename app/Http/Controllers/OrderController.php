@@ -14,18 +14,22 @@ use App\Models\Order\OrderItem;
 use App\Models\Product\Product;
 use App\Notifications\InProgressNotification;
 use App\Notifications\OrderFinishNotification;
+use App\Payments\Fondy;
 use App\Services\Iiko\Iiko;
 use Carbon\Carbon;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
+use Illuminate\Session\SessionManager;
+use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class OrderController extends Controller
 {
     /**
-     * @var \Illuminate\Session\SessionManager|\Illuminate\Session\Store|mixed
+     * @var SessionManager|Store|mixed
      */
     public $uuid;
 
@@ -63,6 +67,57 @@ class OrderController extends Controller
             ->first();
 
         return view('pages.order.index', compact('order', 'organization'));
+    }
+
+
+    public function payStatus()
+    {
+        return view('pages.order.pay_status');
+    }
+
+
+    public function fondy(int $id, Fondy $fondy)
+    {
+        $order = Order::query()
+            ->where('id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if($order){
+            if ($order->organization->account->is_iiko == 1) {
+                $sync = new SyncController();
+                $stop_list = $sync->stop_lists($order->organization);
+
+                if ($stop_list != false) {
+                    foreach ($order->items as $order_item) {
+                        if (array_key_exists($order_item->product->iiko_id, $stop_list) && $stop_list[$order_item->product->iiko_id] == 0) {
+                            return redirect()->back()->with(['error' => 'К сожалению товар "' . $order_item->product->name . '" закончился, удалите его из корзины и оформите заказ.']);
+                        }
+                    }
+                }
+            }
+
+            if ($order->organization->account->is_iiko == 1) {
+                $send_order_to_iiko = $this->send_order_to_iiko($order);
+
+                if ($send_order_to_iiko === false) {
+                    return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
+                }
+
+                if ($send_order_to_iiko) {
+                    $order->update([
+                        'order_status' => 1
+                    ]);
+                    $createdLink = $fondy->createdLink($order);
+
+                    if ($createdLink['status'] == 'success') {
+                        return redirect($createdLink['checkout_url']);
+                    }
+                }
+                return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
+            }
+        }
+        return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
     }
 
 
@@ -139,7 +194,9 @@ class OrderController extends Controller
         return $full_price;
     }
 
-    public function store(OrderStoreRequest $request)
+    public function store(
+        OrderStoreRequest $request
+    )
     {
         $order = Order::where('uuid', $this->uuid)
             ->where('user_id', auth()->id())
@@ -153,10 +210,12 @@ class OrderController extends Controller
         $order->timestamp_at = collect([
             'created_at' => Carbon::now()->toDateTimeString()
         ]);
-
+        $order->address = $request->get('address');
+        $order->is_delivery = $request->get('is_delivery');
+        $order->order_status = 1;
 
         if (!empty(request('time'))) {
-            $order->time = $request->time;
+            $order->time = $request->get('time');
             $order->is_time = 1;
         } else $order->time = date('H:i');
 
@@ -243,16 +302,24 @@ class OrderController extends Controller
     public function update()
     {
         $data = request()->validate([
-            // 'payment_type' => 'required|exists:payment_types,id',
+            'payment_type' => 'required|exists:payment_types,id',
             'comment' => 'nullable|string|max:200',
+            'address' => 'nullable|string|max:200',
+            'time' => 'nullable|string|max:200',
+            'is_delivery' => 'required|integer',
+            'time_issue' => 'required|integer',
         ]);
         $order = Order::where('uuid', $this->uuid)
             ->where('user_id', auth()->id())
             ->where('organization_id', $this->organization_id)
             ->firstOrFail();
 
-        //   $order->payment_type_id = request('payment_type');
+        $order->payment_type_id = request('payment_type');
         $order->comment = request('comment');
+        $order->is_delivery = request('is_delivery');
+        $order->address = request('address');
+     //   $order->time_issue = request('time_issue');
+        $order->time = request('time_issue');
         $order->save();
 
         return response()->json(['success' => true]);
@@ -265,13 +332,9 @@ class OrderController extends Controller
         $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
         $result = $iiko->addOrder($order)->orderInfo;
 
-
-        //file_put_contents('/home/newbufetvrprocom/public_html/order.json',json_encode($result),FILE_APPEND);
-
         if (!isset($result->id)) {
             return false;
         }
-
         unset($order->time_after);
 //
 //        $order->iiko_order_number = $result->posId;
@@ -282,7 +345,13 @@ class OrderController extends Controller
 
     public function update_status_from_iiko()
     {
-        $orders = Order::whereNotNull('iiko_id')->where('order_status', '<>', '4')->where('order_status', '<>', '5')->where('created_at', '>=', Carbon::now()->startOfDay())->where('created_at', '<=', Carbon::now()->endOfDay())->get();
+        $orders = Order::whereNotNull('iiko_id')
+            ->where('order_status', '<>', '4')
+            ->where('order_status', '<>', '5')
+            ->where('created_at', '>=', Carbon::now()->startOfDay())
+            ->where('created_at', '<=', Carbon::now()->endOfDay())
+            ->get();
+
         foreach ($orders as $order) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
             $result = $iiko->getOrder($order->iiko_id);

@@ -59,8 +59,10 @@ class ProductController extends AdminController
         $grid->column('organization.name', __('Организация'));
         $grid->column('name', __('Название'));
         $grid->column('category.name', __('Категория'));
+        $grid->column('pay_category.name', __('Категория Оплаты'));
         $grid->column('image', __('Изображение'))->image(asset('/'), 200);
-        $grid->column('code', __('Код'));
+       // $grid->column('code', __('Код'));
+        $grid->column('weight', __('Вес'));
         $grid->column('price', __('Цена'));
         $grid->column('sort', __('Сортировка'))->editable();
         $grid->column('isIncludedInMenu', __('Отображать в меню'))->switch();

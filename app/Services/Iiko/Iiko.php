@@ -44,38 +44,31 @@ class Iiko
                 "productId" => $cartItem->product->iiko_id,
                 "amount" => $cartItem->amount,
                 "type" => "Product",
-//                "sum" => $cartItem->price_per_one * $cartItem->amount
             ];
-
             if(isset($cartItem->comment)) {
                 $item['comment'] = $cartItem->comment;
             }
 
-            array_push($items, $item);
+            $items[] = $item;
         }
+
 
         $data = [
             "organizationId" => $this->api->organization,
             "terminalGroupId" => $this->api->getTerminals()->terminalGroups[0]->items[0]->id,
-
             "order" => [
                 "id" => $cart->guid,
-
                 "phone" => $user->phone,
                 "orderTypeId" => "5b1508f9-fe5b-d6af-cb8d-043af587d5c2",
                 "personsCount" => $cart->number_of_devices,
                 "items" => $items,
-
                 "customer" => [
-//                "id" => $user ? @$user->guid : null,
                     "name" => $user->name,
-
                     "type" => "regular"
                 ],
-                "phone" => $user->phone,
-
             ]
         ];
+
         if ($cart->time_after == 2) {
             $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ":00.000";
         }

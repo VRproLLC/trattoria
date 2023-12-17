@@ -27,15 +27,25 @@
                                                 @if($organization->images)
                                                     <img src="{{asset($organization->images)}}" alt="">
                                                 @else
-                                                    <img src="{{ asset('image/image_bufet.jpg') }}" alt="">
+                                                    <img src="{{ asset('image/image_trattoria.jpg') }}" alt="">
                                                 @endif
                                             </div>
-                                            <p class="new_name_address"><img src="{{asset('image/localization.svg')}}"
-                                                                             alt="">{{$organization->address}}</p>
-                                            <p class="new_time_work"><img src="{{asset('image/time_work.svg')}}"
-                                                                          alt="">{{$organization->workTime}}</p>
-                                            <p class="new_info_point"><img src="{{asset('image/info_icon.svg')}}"
-                                                                           alt="">{{ $organization->description }}</p>
+                                            <div class="title_description">
+                                                <p class="title_name_org">{{ $organization->fullName }}</p>
+                                                <p>{{ $organization->description }}</p>
+                                            </div>
+                                            <p class="home_addr_line"><img src="{{asset('image/localization.svg')}}" alt="">{{$organization->address}}</p>
+                                            <div class="line_new_info">
+                                                <p class="wrap_wrk_infos"><img src="{{asset('image/time_work.svg')}}" alt="">25-35 хв</p>
+                                                <p class="wrap_wrk_infos"><img src="{{asset('image/dish.svg')}}" alt="">від {{ round($organization->products->avg('price')) }} ₴ </p>
+
+                                                @if($organization->delta_distance > 0)
+                                                    <p class="wrap_wrk_infos"><img src="{{asset('image/localization.svg')}}" alt="">{{ $organization->delta_distance ?? 0 }}  км</p>
+                                                @else
+                                                    <p class="wrap_wrk_infos"><img src="{{asset('image/localization.svg')}}" alt="">0  км</p>
+                                                @endif
+
+                                            </div>
                                         </a>
                                     @else
                                         <div class="search_parent_block new_parent_search">
@@ -43,16 +53,23 @@
                                                 @if($organization->images)
                                                     <img src="{{asset($organization->images)}}" alt="">
                                                 @else
-                                                    <img src="{{ asset('image/image_bufet.jpg') }}" alt="">
+                                                    <img src="{{ asset('image/image_trattoria.jpg') }}" alt="">
                                                 @endif
                                             </div>
-                                            <p class="new_name_address"><img
-                                                        src="{{asset('image/localization_gray.svg')}}"
-                                                        alt="">{{$organization->address}}</p>
-                                            <p class="new_time_work"><img src="{{asset('image/error_I.svg')}}"
-                                                                          alt="">{{trans('main.order_not')}}</p>
-                                            <p class="new_info_point"><img src="{{asset('image/info_icon.svg')}}"
-                                                                           alt="">{{ $organization->description }}</p>
+                                            <div class="title_description">
+                                                <p class="title_name_org">{{ $organization->fullName }}</p>
+                                                <p class="new_info_point">{{ $organization->description }}</p>
+                                            </div>
+                                            <p class="home_addr_line"><img src="{{asset('image/localization.svg')}}" alt="">{{$organization->address}}</p>
+                                            <div class="line_new_info">
+                                                <p class="wrap_wrk_infos"><img src="{{asset('image/time_work.svg')}}" alt="">25-35 хв</p>
+                                                <p class="wrap_wrk_infos"><img src="{{asset('image/dish.svg')}}" alt="">від {{ round($organization->products->avg('price')) }} ₴ </p>
+                                                @if($organization->delta_distance > 0)
+                                                    <p class="wrap_wrk_infos"><img src="{{asset('image/localization.svg')}}" alt="">{{ $organization->delta_distance ?? 0 }}  км</p>
+                                                @else
+                                                    <p class="wrap_wrk_infos"><img src="{{asset('image/localization.svg')}}" alt="">0  км</p>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endif
                                 @endforeach
@@ -97,7 +114,7 @@
                             lng: +$(this).attr('data-longitude'),
                         },
                         icon: {
-                            url: 'image/marker.svg'
+                            url: '{{ asset('/image/logo.svg') }}'
                         },
                         map: map
                     });
@@ -105,7 +122,7 @@
                         '<div class="infowindow_link">' +
                         '<a href="' + $(this).attr('href') + '">' +
                         '<div class="left_icon_infowindow">' +
-                        '<img src="image/bufet_logo.png" alt="">' +
+                        '<img src="{{ asset('/image/logo.svg') }}" alt="">' +
                         '</div>' +
                         '<div class="right_text_infowindow">' +
                         '<p class="name_zvd_info">' + $(this).attr('data-address') + '</p>' +
@@ -128,7 +145,9 @@
 
                 }
             });
+
         }
+
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQwPhADcjl2Z0SUT7D-vRfd-0xTB-d76w&libraries=visualization,geometry,drawing,places&callback=initMap"></script>
 @endsection

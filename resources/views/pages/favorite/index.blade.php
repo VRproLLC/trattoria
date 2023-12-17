@@ -147,6 +147,15 @@
                                                         <div class="red_status">{{$order->order_status_text}}</div>
                                                     </div>
                                                 @endif
+                                                @if($order->order_status == \App\Enums\OrderEnum::$DELIVERED)
+                                                    <div class="line_status_orders">
+                                                        <div class="line_icon_status"><img
+                                                                    src="{{asset('image/status4.svg')}}" alt=""> Статус
+                                                            заказа:
+                                                        </div>
+                                                        <div class="red_status">{{$order->order_status_text}}</div>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endif
                                     @endforeach

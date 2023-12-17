@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{config('admin.title')}} | {{ trans('admin.login') }}</title>
+    <title>{{config('admin.title')}}</title>
     @if(!is_null($favicon = Admin::favicon()))
         <link rel="shortcut icon" href="{{$favicon}}">
     @endif

@@ -6,6 +6,9 @@ namespace App\Enums;
 class OrderEnum
 {
 
+    public static $DELIVERY_NO = 1;
+    public static $DELIVERY_YES = 2;
+
     public static $STATUSES = [
         0 => 'Наполняет корзину',
         1 => 'Новый заказ',
@@ -13,6 +16,7 @@ class OrderEnum
         3 => 'Готов',
         4 => 'Выдан',
         5 => 'Отменен',
+        6 => 'Доставка',
     ];
 
     public static $IIKO_TRANSPORT_STATUSES = [
@@ -42,11 +46,13 @@ class OrderEnum
 
     public static $ACTIVE_STATUSES = [1, 2, 3, 4];
 
+    public static $FILLS_ORDER = 0;
     public static $NEW_ORDER = 1;
     public static $IN_PROCESS = 2;
     public static $FINISHED = 3;
     public static $GIV_AWAY = 4;
     public static $CANCELED = 5;
+    public static $DELIVERED = 6;
 
 
     public static function getStatus(int $statusId){

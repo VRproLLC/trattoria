@@ -8,7 +8,7 @@ class IikoApi
 {
     protected $login = '';
     protected $secret = '';
-    protected $url = 'https://api-eu.iiko.services/api/1/';
+    protected $url = 'https://api-eu.syrve.live/api/1/';
     public $organization = '';
     public $token = false;
 
@@ -47,13 +47,14 @@ class IikoApi
         $curl = new CurlService();
 
         $post = array(
-            'apiLogin'       => $this->login,
+            'apiLogin'  => $this->login,
         );
         $headers = array(
             'Content-type:application/json',
             'Accept:application/json',
             'Timeout:10'
         );
+
         return  $curl
             ->to($this->url.'access_token')->withData($post)->withHeaders($headers)->asJson()
             ->post()->token;
@@ -71,7 +72,7 @@ class IikoApi
         $post = array(
             'organizationIds'       => $this->organization,
             "returnAdditionalInfo"=> true,
-"includeDisabled"=> false
+            "includeDisabled"=> false
         );
         return  $curl
             ->to($this->url.'organizations')->withData($post)->withHeaders($headers)->asJson()
@@ -91,24 +92,7 @@ class IikoApi
     {
 
 
-//        $data = [
-//            'organizationIds' => [
-//                'e3620000-7b0f-0696-7098-08d886212cd5'
-//            ],
-//            "includeDisabled" => true,
-//        ];
-//
-////        dd(json_encode($data));
-//        $data = json_encode($data);
-//        $a = $curl
-//            ->to('https://card.iiko.co.uk:9900/api/1/terminal_groups?access_token='.$this->token.'&request_timeout=10000')
-//            ->withData($data)
-////            ->asJson()
-//            ->post();
-//        dd(json_decode($a));
-//        return $curl
-//            ->to($this->url.'nomenclature/'.$this->organization.'?revision=0&access_token='.$this->token)
-//            ->get();
+
 
         $curl = new CurlService();
         $headers = array(
@@ -118,9 +102,9 @@ class IikoApi
             'Authorization:Bearer '.$this->token
         );
         $post = array(
-            'organizationId'       => $this->organization,
-
+            'organizationId' => $this->organization,
         );
+
         return  $curl
             ->to($this->url.'nomenclature')->withData($post)->withHeaders($headers)->asJson()
             ->post();

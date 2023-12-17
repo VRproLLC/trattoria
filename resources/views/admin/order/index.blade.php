@@ -58,11 +58,6 @@
     <div class="modal_order_admin append_adds_order_block">
         {{--@include('partials.modals.admin_order_add_product')--}}
     </div>
-
-
-
-    <div class="modal_order_admin append_archive_result">
-    </div>
-    <div class="modal_order_admin archive_modal append_search_result">
-    </div>
+    <div class="modal_order_admin append_archive_result"></div>
+    <div class="modal_order_admin archive_modal append_search_result"></div>
 @endsection

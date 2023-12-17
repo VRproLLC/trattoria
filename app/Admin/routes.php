@@ -6,7 +6,6 @@ Admin::routes();
 
 app()->setLocale('uk');
 
-
 Route::group([
     'prefix'        => config('admin.route.prefix'),
     'namespace'     => config('admin.route.namespace'),
@@ -16,22 +15,16 @@ Route::group([
 
     $router->get('/', 'HomeController@index')->name('home');
     $router->get('/synchronization', 'SyncController@index');
-//    $router->get('/synchronization', 'SyncController@index');
-
-
-
-  //  $router->get('/notification', 'NotificationController@index')->name('notification');
-
-
-
 
     $router->get('/clients', 'ClientsController@index')->name('clients');
     $router->get('/clients/{id}', 'ClientsController@show')->name('clients.show');
     $router->get('/clients/{id}/{orderId}', 'ClientsController@order')->name('clients.order');
-
-
-
     $router->get('/synchronization/sync', 'SyncController@sync')->name('synchronization.sync');
+
+    $router->get('/delivery', 'DeliveryController@index');
+
+
+
     $router->get('/dashboard', 'DashboardController@index');
     $router->get('/dashboard/{id}', 'DashboardController@show')->name('dashboard.show');
     $router->post('/dashboard/content', 'DashboardController@content')->name('dashboard.content');
@@ -47,6 +40,7 @@ Route::group([
     $router->post('/dashboard/remove_order', 'DashboardController@remove_order')->name('dashboard.remove_order');
     $router->post('/dashboard/give_away_order', 'DashboardController@give_away_order')->name('dashboard.give_away_order');
 
+
     $router->resource('auth/users', 'UserController')->names('admin.auth.users');
     $router->resource('ikko-accounts', IikoAccountController::class);
     $router->resource('categories', CategoryController::class);
@@ -54,5 +48,6 @@ Route::group([
     $router->resource('organizations', OrganizationController::class);
     $router->resource('payment-types', PaymentTypeController::class);
     $router->resource('notification', NotificationController::class);
+    $router->resource('fops', FopController::class);
 
 });

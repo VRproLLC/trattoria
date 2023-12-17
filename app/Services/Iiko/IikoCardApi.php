@@ -41,8 +41,6 @@ class IikoCardApi
         return $curl
             ->to($this->url . 'access_token')->withData($post)->withHeaders($headers)->asJson()
             ->post()->token;
-
-
     }
 
 

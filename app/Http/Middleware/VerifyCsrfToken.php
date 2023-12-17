@@ -14,6 +14,8 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         '/webhook/api_transport/get',
         'webhook.api_transport.get',
+        '/webhook/fondy',
+        '/order/pay-status',
         'save-token-os',
         '/save-token-os',
     ];

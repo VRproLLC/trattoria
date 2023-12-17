@@ -18,7 +18,6 @@ class WebhookController extends Controller
 
     public function get()
     {
-//        Log::info(serialize(request()->all()));
         $request = request()->all();
 
         try {
