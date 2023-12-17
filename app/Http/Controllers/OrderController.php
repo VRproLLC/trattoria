@@ -239,19 +239,19 @@ class OrderController extends Controller
 
         $order->order_status = 1;
         $order->save();
-
-        if ($order->organization->account->is_iiko == 1) {
-            if (request('time_issue') == 2) {
-                $order->time_after = true;
-            }
-            $send_order_to_iiko = $this->send_order_to_iiko($order);
-            if ($send_order_to_iiko == false) {
-                Log::info('order crate error. Phone: ' . auth()->user()->phone);
-                return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
-            }
-        }
-
-        event(new NewOrderEvent(['action' => 'update_wrapper', 'is_need_sound' => true]));
+//
+//        if ($order->organization->account->is_iiko == 1) {
+//            if (request('time_issue') == 2) {
+//                $order->time_after = true;
+//            }
+//            $send_order_to_iiko = $this->send_order_to_iiko($order);
+//            if ($send_order_to_iiko == false) {
+//                Log::info('order crate error. Phone: ' . auth()->user()->phone);
+//                return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
+//            }
+//        }
+//
+//        event(new NewOrderEvent(['action' => 'update_wrapper', 'is_need_sound' => true]));
         return redirect()->back()->with(['prevent_back' => true]);
     }
 
