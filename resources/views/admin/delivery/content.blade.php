@@ -1,6 +1,6 @@
 <div class="one_admin_block">
     <div class="top_admin_block">
-        <p>Новые</p>
+        <p>Нові</p>
         <p class="red_count" id="counter">{{$new_orders->count()}}</p>
     </div>
     <div class="bottom_admin_block">
@@ -66,7 +66,7 @@
 </div>
 <div class="one_admin_block">
     <div class="top_admin_block">
-        <p>Готовятся</p>
+        <p>Готується</p>
         <p class="red_count">{{$in_process_orders->count()}}</p>
     </div>
     <div class="bottom_admin_block">
@@ -125,7 +125,7 @@
 </div>
 <div class="one_admin_block">
     <div class="top_admin_block">
-        <p>Выдача</p>
+        <p>Видача</p>
         <p class="red_count">{{$finished_orders->count()}}</p>
     </div>
     <div class="bottom_admin_block">
@@ -186,7 +186,7 @@
 
 <div class="one_admin_block">
     <div class="top_admin_block">
-        <p>Готово к доставке</p>
+        <p>Готове</p>
         <p class="red_count">{{$delivery_orders->count()}}</p>
     </div>
     <div class="bottom_admin_block">

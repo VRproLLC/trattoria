@@ -2133,7 +2133,7 @@ body.onloadStyle:after {
     align-items: center;
     -webkit-box-pack: start;
     -ms-flex-pack: start;
-    justify-content: flex-start;
+    justify-content: space-between;
     font-size: 20px;
     line-height: 26px;
     letter-spacing: -0.3px;
@@ -2164,30 +2164,29 @@ body.onloadStyle:after {
     content: none;
 }
 
-.red_count {
-    margin-left: 15px;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: -webkit-box;
-    display: -ms-flexbox;
+.new_green_count {
+    color: #B1B438;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    border: 1px solid #B8BCCA;
     display: flex;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
     align-items: center;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
     justify-content: center;
-    background: #4E2C28;
-    font-size: 15px;
-    line-height: 19px;
-    letter-spacing: -0.3px;
-    color: #FFFFFF;
+}
+
+.new_green_count.color{
+    background: #B1B438;
+    color: #FFF;
 }
 
 .bottom_admin_block {
     min-height: calc(100% - 60px);
-    padding: 15px;
+    padding: 15px 0px;
 }
 
 .bottom_admin_block:before {
@@ -2205,19 +2204,10 @@ body.onloadStyle:after {
 }
 
 .border_order_wrap {
-    padding: 15px;
-    border: 1px solid rgb(219, 219, 219);
+    padding: 24px 16px;
     border-radius: 5px;
     display: block;
-}
-
-.border_order_wrap:not(:last-child) {
-    margin-bottom: 15px;
-}
-
-.border_order_wrap .line_about_dish:first-child {
-    border-bottom: 1px solid #DBDBDB;
-    padding-bottom: 20px;
+    border-bottom: 1px solid #B8BCCA;
 }
 
 .border_order_wrap .line_about_dish:last-child {
@@ -2718,7 +2708,100 @@ body.onloadStyle:after {
     border: none;
 }
 
+.line_number_order_price_date {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E7E9F0;
+    margin-bottom: 16px;
+}
 
+.brown_number_order {
+    color: #462E29;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.time_date_order {
+    color: #6F758A;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+dottag {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    position: relative;
+    background: #B8BCCA;
+    margin-right: 8px;
+    margin-left: 8px;
+}
+
+.green_price_new {
+    color: #B1B438;
+    text-align: right;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.each_product_order {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 12px;
+}
+
+.count_product_order {
+    width: 75px;
+    color: #34394B;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.name_product_order {
+    color: #34394B;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    width: calc(100% - 75px);
+}
+
+.type_pay_order {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-top: 12px;
+}
+
+.type_pay_order div {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #ECEEF5;
+    margin-right: 8px;
+    text-transform: uppercase;
+    color: #000;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
 
 
 
@@ -3532,13 +3615,15 @@ button.delete_prod svg {
     margin-bottom: 16px;
 }
 
-.home_addr_line img, .wrap_wrk_infos img{
+.home_addr_line img,
+.wrap_wrk_infos img {
     height: 16px;
     width: 16px;
     margin-right: 8px;
 }
 
-.append_addres_block a div.line_new_info, .append_addres_block div div.line_new_info {
+.append_addres_block a div.line_new_info,
+.append_addres_block div div.line_new_info {
     display: flex;
     align-items: center;
     justify-content: space-between;
