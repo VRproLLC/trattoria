@@ -684,19 +684,9 @@ $(document).ready(function () {
         });
     });
     $('.read_orders_back').change(function () {
-        var thisForm = $(this).serialize();
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + '/order/update',
-            data: thisForm,
-            success: function (data) {
-                console.log(data);
-            },
-            error: function (data) {
-                console.log(data);
-            }
-        });
+        formOrderUpdate();
     });
+
     var flagsend = true;
     $('.submit_checkout_button').click(function () {
         if ($(this).parents('form').hasClass('read_orders_back')) {
@@ -1020,3 +1010,19 @@ $(document).ready(function () {
         }
     })
 });
+
+function formOrderUpdate(){
+    let thisForm = $('#orderForm').serialize();
+
+    $.ajax({
+        type: 'POST',
+        url: window.location.origin + '/order/update',
+        data: thisForm,
+        success: function (data) {
+            console.log(data);
+        },
+        error: function (data) {
+            console.log(data);
+        }
+    });
+}

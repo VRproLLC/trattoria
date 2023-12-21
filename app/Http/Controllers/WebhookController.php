@@ -9,6 +9,7 @@ use App\Models\Product\Product;
 use App\Notifications\InProgressNotification;
 use App\Notifications\OrderCancellationNotification;
 use App\Notifications\OrderFinishNotification;
+use App\Services\IikoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -103,14 +104,15 @@ class WebhookController extends Controller
             $product->save();
         }
 
-        $sync_controller = new SyncController();
-
+        $sync_controller = new IikoService();
         $stop_lists = $sync_controller->stop_lists($organization);
 
         if ($stop_lists != false) {
             foreach ($stop_lists as $iiko_id => $value) {
                 if ($value <= 0) {
-                    $product = Product::where('iiko_id', $iiko_id)->where('organization_id', $organization->id)->first();
+                    $product = Product::where('iiko_id', $iiko_id)
+                        ->where('organization_id', $organization->id)
+                        ->first();
 
                     if ($product) {
                         $product->in_stop_list = 1;

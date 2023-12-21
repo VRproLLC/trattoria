@@ -16,6 +16,7 @@ use App\Notifications\InProgressNotification;
 use App\Notifications\OrderFinishNotification;
 use App\Payments\Fondy;
 use App\Services\Iiko\Iiko;
+use App\Services\IikoService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -43,8 +44,6 @@ class OrderController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
-
         $this->middleware(function ($request, $next) {
             $this->uuid = session('uuid');
             $this->organization_id = Cookie::get('organization_id');
@@ -85,7 +84,7 @@ class OrderController extends Controller
 
         if($order){
             if ($order->organization->account->is_iiko == 1) {
-                $sync = new SyncController();
+                $sync = new IikoService();
                 $stop_list = $sync->stop_lists($order->organization);
 
                 if ($stop_list != false) {
@@ -97,30 +96,24 @@ class OrderController extends Controller
                 }
             }
 
-            if ($order->organization->account->is_iiko == 1) {
-                $send_order_to_iiko = $this->send_order_to_iiko($order);
+            $createdLink = $fondy->createdLink($order);
 
-                if ($send_order_to_iiko === false) {
-                    return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
-                }
-
-                if ($send_order_to_iiko) {
-                    $order->update([
-                        'order_status' => 1
-                    ]);
-                    $createdLink = $fondy->createdLink($order);
-
-                    if ($createdLink['status'] == 'success') {
-                        return redirect($createdLink['checkout_url']);
-                    }
-                }
-                return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
+            if ($createdLink['status'] == 'success') {
+                $order->update([
+                    'order_status' => 1,
+                    'payment_status' => 0,
+                    'date' => Carbon::now(),
+                ]);
+                return redirect($createdLink['checkout_url']);
             }
         }
         return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
     }
 
 
+    /**
+     * @throws \Exception
+     */
     public function basket()
     {
         $order = Order::where('uuid', $this->uuid)
@@ -156,10 +149,9 @@ class OrderController extends Controller
 
         $product = Product::where('id', $request->get('product_id'))->firstOrFail();
 
-        if (!$order_item) {
+        if (empty($order_item)) {
             $order_item = new OrderItem();
         }
-
         $order_item->order_id = $order->id;
         $order_item->product_id = $request->get('product_id');
         $order_item->amount = $request->get('amount');
@@ -168,6 +160,7 @@ class OrderController extends Controller
         if (!empty($request->get('comment'))) {
             $order_item->comment = $request->get('comment');
         }
+
         $order_item->save();
 
         if ($request->get('amount') == 0) {
@@ -212,25 +205,23 @@ class OrderController extends Controller
         ]);
         $order->address = $request->get('address');
         $order->is_delivery = $request->get('is_delivery');
-        $order->order_status = 1;
+        $order->time = date('H:i');
 
-        if (!empty(request('time'))) {
+        if ($request->get('is_time') && request('time') !== null) {
             $order->time = $request->get('time');
-            $order->is_time = 1;
-        } else $order->time = date('H:i');
+            $order->is_time = 2;
+        }
+
 
         $order->save();
 
         if ($order->organization->account->is_iiko == 1) {
-            $sync = new SyncController();
+            $sync = new IikoService();
             $stop_list = $sync->stop_lists($order->organization);
 
             if ($stop_list != false) {
-
                 foreach ($order->items as $order_item) {
-
                     if (array_key_exists($order_item->product->iiko_id, $stop_list) && $stop_list[$order_item->product->iiko_id] == 0) {
-
                         return redirect()->back()->with(['error' => 'К сожалению товар "' . $order_item->product->name . '" закончился, удалите его из корзины и оформите заказ.']);
                     }
                 }
@@ -239,19 +230,16 @@ class OrderController extends Controller
 
         $order->order_status = 1;
         $order->save();
-//
-//        if ($order->organization->account->is_iiko == 1) {
-//            if (request('time_issue') == 2) {
-//                $order->time_after = true;
-//            }
-//            $send_order_to_iiko = $this->send_order_to_iiko($order);
-//            if ($send_order_to_iiko == false) {
-//                Log::info('order crate error. Phone: ' . auth()->user()->phone);
-//                return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
-//            }
-//        }
-//
-//        event(new NewOrderEvent(['action' => 'update_wrapper', 'is_need_sound' => true]));
+
+        if ($order->organization->account->is_iiko == 1) {
+            $send_order_to_iiko = $this->send_order_to_iiko($order);
+            if ($send_order_to_iiko == false) {
+                Log::info('order crate error. Phone: ' . auth()->user()->phone);
+                return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
+            }
+        }
+
+        event(new NewOrderEvent(['action' => 'update_wrapper', 'is_need_sound' => true]));
         return redirect()->back()->with(['prevent_back' => true]);
     }
 
@@ -318,27 +306,25 @@ class OrderController extends Controller
         $order->comment = request('comment');
         $order->is_delivery = request('is_delivery');
         $order->address = request('address');
-     //   $order->time_issue = request('time_issue');
-        $order->time = request('time_issue');
+        $order->is_time = request('time_issue');
+        $order->time = request('time');
         $order->save();
 
         return response()->json(['success' => true]);
     }
 
-    public function send_order_to_iiko($order)
+    public function send_order_to_iiko(Order $order)
     {
         $organization = Organization::where('id', Cookie::get('organization_id'))->firstOrFail();
 
         $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
-        $result = $iiko->addOrder($order)->orderInfo;
+        $result = $iiko->addOrder($order);
 
-        if (!isset($result->id)) {
+        if (!isset($result->orderInfo->id)) {
             return false;
         }
-        unset($order->time_after);
-//
-//        $order->iiko_order_number = $result->posId;
-        $order->iiko_id = $result->id;
+
+        $order->iiko_id = $result->orderInfo->id;
         $order->save();
         return true;
     }
@@ -394,7 +380,7 @@ class OrderController extends Controller
             $product->save();
         }
 
-        $sync_controller = new SyncController();
+        $sync_controller = new IikoService();
 
         $organizations = Organization::whereHas('account', function ($q) {
             $q->where('is_iiko', 1);

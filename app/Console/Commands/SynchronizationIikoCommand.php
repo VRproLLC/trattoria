@@ -2,16 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\SyncController as HomeSyncController;
-use App\Models\Notification;
-use Carbon\Carbon;
+use App\Services\IikoService;
 use Illuminate\Console\Command;
-use OneSignal\Config as OneSignalConfig;
-use OneSignal\OneSignal;
-use Symfony\Component\HttpClient\Psr18Client;
-use Nyholm\Psr7\Factory\Psr17Factory;
 
-class SynchronizationNotifications extends Command
+class SynchronizationIikoCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -44,7 +38,7 @@ class SynchronizationNotifications extends Command
      */
     public function handle(): int
     {
-        $sync = new HomeSyncController();
+        $sync = new IikoService();
         $sync->sync();
 
         return 1;

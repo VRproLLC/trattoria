@@ -99,7 +99,7 @@
                                             </div>
                                         </div>
 -->
-                                                @if($order->order_status == \App\Enums\OrderEnum::$NEW_ORDER)
+                                                @if($order->order_status == \App\Enums\OrderEnum::$NEW_ORDER && $order->payment_type->code == 'CASH' && $order->payment_status == 0)
                                                     <div class="line_status_orders">
                                                         <div class="line_icon_status"><img
                                                                 src="{{asset('image/status1.svg')}}" alt=""> Статус
@@ -111,7 +111,7 @@
                                                         {{trans('main.clear_new_order_button')}}
                                                     </div>
                                                 @endif
-                                                @if($order->order_status == \App\Enums\OrderEnum::$IN_PROCESS)
+                                                @if($order->order_status == \App\Enums\OrderEnum::$IN_PROCESS || $order->payment_status == 1)
                                                     <div class="line_status_orders">
                                                         <div class="line_icon_status"><img
                                                                 src="{{asset('image/status2.svg')}}" alt=""> Статус

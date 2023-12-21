@@ -5,9 +5,8 @@ namespace App\Enums;
 
 class OrderEnum
 {
-
-    public static $DELIVERY_NO = 1;
-    public static $DELIVERY_YES = 2;
+    public static $DELIVERY_YES = 1;
+    public static $DELIVERY_NO = 2;
 
     public static $STATUSES = [
         0 => 'Наполняет корзину',

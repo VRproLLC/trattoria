@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Services;
 
 use App\Models\CategoryPay;
 use App\Models\IikoAccount;
@@ -14,9 +14,8 @@ use App\Services\Iiko\IikoApi;
 use App\Services\Iiko\IikoCardApi;
 use Intervention\Image\Facades\Image;
 
-class SyncController extends Controller
+class IikoService
 {
-
     public function sync()
     {
         $accounts = IikoAccount::where('is_iiko', 1)->get();
@@ -33,36 +32,36 @@ class SyncController extends Controller
             $this->productCategories($organization);
         }
 
-         foreach ($organizations as $organization) {
-             $this->category($organization);
-         }
+        foreach ($organizations as $organization) {
+            $this->category($organization);
+        }
 
-         foreach ($organizations as $organization) {
-             $this->product($organization);
-         }
+        foreach ($organizations as $organization) {
+            $this->product($organization);
+        }
 
-         foreach ($organizations as $organization) {
-             $this->payment_type($organization);
-         }
+        foreach ($organizations as $organization) {
+            $this->payment_type($organization);
+        }
 
-         foreach ($organizations as $organization) {
-             $this->stop_lists($organization);
+        foreach ($organizations as $organization) {
+            $this->stop_lists($organization);
         }
     }
 
-    public function organizations($account_id, $login, $password)
+    public function organizations($account_id, $login, $password): bool
     {
         $iiko = new IikoApi($login, $password, null);
 
         foreach ($iiko->getOrganizationList()->organizations as $iiko_organization) {
             $organization = Organization::where('iiko_id', $iiko_organization->id)->first();
 
-            if (!$organization) {
+            if (empty($organization)) {
                 $organization = new Organization();
             }
+
             $organization->ikko_account_id = $account_id;
             $organization->iiko_id = $iiko_organization->id;
-//            $organization->isActive = 0;
             $organization->latitude = $iiko_organization->latitude ?? null;
             $organization->longitude = $iiko_organization->longitude?? null;
             $organization->fullName = $iiko_organization->name;
@@ -77,17 +76,14 @@ class SyncController extends Controller
             $organization->phone = $iiko_organization->contact->phone?? null;
             $organization->save();
         }
+
         return true;
     }
-
 
     public function productCategories($organization)
     {
         $iiko = new IikoApi($organization->account->login, $organization->account->password, $organization->iiko_id);
         $nomenclature = $iiko->getProducts();
-
-
-        dd($nomenclature);
 
         foreach ($nomenclature->productCategories as $iiko_category) {
             CategoryPay::updateOrCreate([
@@ -100,7 +96,7 @@ class SyncController extends Controller
         }
     }
 
-    public function category($organization)
+    public function category($organization): bool
     {
         $iiko = new IikoApi($organization->account->login, $organization->account->password, $organization->iiko_id);
 
@@ -109,7 +105,7 @@ class SyncController extends Controller
         foreach ($nomenclature->groups as $iiko_category) {
             $new_category = Category::where('organization_id', $organization->id)->where('iiko_id', $iiko_category->id)->first();
 
-            if (!$new_category) {
+            if (empty($new_category)) {
                 $new_category = new Category();
             }
 
@@ -141,8 +137,8 @@ class SyncController extends Controller
         $iiko = new IikoApi($organization->account->login, $organization->account->password, $organization->iiko_id);
         $iiko_products = $iiko->getProducts()->products;
 
-
         foreach ($iiko_products as $iiko_product) {
+
             $product = Product::where('organization_id', $organization->id)->where('iiko_id', $iiko_product->id)->first();
             if (!$product) {
                 $product = new Product();
@@ -152,7 +148,6 @@ class SyncController extends Controller
             $product->organization_id = $organization->id;
             $product->category_id = $category ? $category->id : 0;
             $product->iiko_id = $iiko_product->id;
-            $product->isIncludedInMenu = false;
             $product->isDeleted = $iiko_product->isDeleted;
             $product->code = $iiko_product->code;
             $product->price = $iiko_product->sizePrices[0]->price->currentPrice;
@@ -182,9 +177,6 @@ class SyncController extends Controller
                 $url = $iiko_product->imageLinks[0];
 
                 $image_name = time() . '-' . rand(10, 999);
-//                file_put_contents('images/' . $image_name . '.jpg', file_get_contents($url));
-//                $product->image = ('images/' . $image_name . '.jpg');
-
 
                 try {
                     $imgage = Image::make(file_get_contents($url));
@@ -228,13 +220,13 @@ class SyncController extends Controller
             $existing_ids[] = $iiko_payment_type->id;
             $payment_type = PaymentType::where('organization_id', $organization->id)->where('iiko_id', $iiko_payment_type->id)->first();
 
-            if (!$payment_type) {
+            if (empty($payment_type)) {
                 $payment_type = new PaymentType();
             }
 
             $payment_type->organization_id = $organization->id;
             $payment_type->iiko_id = $iiko_payment_type->id;
-            $payment_type->code = $iiko_payment_type->code;
+            $payment_type->code = $iiko_payment_type->paymentTypeKind;
             $payment_type->name = $iiko_payment_type->name;
             $payment_type->comment = $iiko_payment_type->comment;
             $payment_type->combinable = $iiko_payment_type->combinable;
@@ -249,16 +241,13 @@ class SyncController extends Controller
         PaymentType::where('organization_id', $organization->id)->whereNotIn('iiko_id', $existing_ids)->delete();
     }
 
-    public function stop_lists($organization)
+    public function stop_lists($organization): array
     {
         $iiko = new IikoCardApi($organization->account->login, $organization->account->password, $organization->iiko_id);
         $stop_lists = $iiko->getStopLists();
         $result = [];
 
-        $stop_lists = $stop_lists;
-
         if ($stop_lists != false) {
-
             foreach ($stop_lists->terminalGroupStopLists as $item) {
                 foreach ($item->items as $product) {
                     foreach ($product->items as $prod) {

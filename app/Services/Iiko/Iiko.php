@@ -2,6 +2,7 @@
 
 namespace App\Services\Iiko;
 
+use App\Models\Order\Order;
 use App\Models\Product\Category;
 use Illuminate\Support\Facades\Log;
 
@@ -27,17 +28,15 @@ class Iiko
         return $this->api->closeOrder($data);
     }
 
-    public function addOrder($cart)
+    public function addOrder(
+        Order $cart,
+        bool $isProcessedExternally= false,
+        bool $isPreliminary = false,
+        bool $isExternal = false,
+        bool $isPrepay = false
+    )
     {
-        $user = auth()->user();
-
         $items = [];
-        $comment = '';
-        if (!empty($cart->comment)) {
-            $comment = $cart->comment;
-        }
-
-        $total = $cart->full_price;
 
         foreach ($cart->items as $cartItem) {
             $item = [
@@ -45,6 +44,7 @@ class Iiko
                 "amount" => $cartItem->amount,
                 "type" => "Product",
             ];
+
             if(isset($cartItem->comment)) {
                 $item['comment'] = $cartItem->comment;
             }
@@ -52,42 +52,39 @@ class Iiko
             $items[] = $item;
         }
 
-
         $data = [
             "organizationId" => $this->api->organization,
             "terminalGroupId" => $this->api->getTerminals()->terminalGroups[0]->items[0]->id,
             "order" => [
-                "id" => $cart->guid,
-                "phone" => $user->phone,
+                "id" => $cart->uuid,
+                "phone" => $cart->user->phone,
                 "orderTypeId" => "5b1508f9-fe5b-d6af-cb8d-043af587d5c2",
                 "personsCount" => $cart->number_of_devices,
                 "items" => $items,
                 "customer" => [
-                    "name" => $user->name,
+                    "name" => $cart->user->name,
                     "type" => "regular"
                 ],
             ]
         ];
 
-        if ($cart->time_after == 2) {
+        if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
             $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ":00.000";
         }
-        $paymentType = [
-            "id" => $cart->payment_type->iiko_id,
-            "code" => $cart->payment_type->code
-        ];
 
-        $paymentItems = [
+        $data['order']['comment'] = $cart->comment ?? '';
+        $data['order']['payments'] = [
             [
-                "sum" => $total,
-                "paymentType" => $paymentType,
-                "isProcessedExternally" => false,
-                "isExternal" => false
+                "sum" => $cart->full_price,
+                "paymentTypeId" => $cart->payment_type->iiko_id,
+                "paymentTypeKind" => $cart->payment_type->code,
+                "isProcessedExternally" => $isProcessedExternally,
+                "isExternal" => $isExternal,
+                "isPreliminary" => $isPreliminary,
+                "isPrepay" =>  $isPrepay
             ]
         ];
 
-        $data['order']['comment'] = $comment;
-        $data['order']['paymentItems'] = $paymentItems;
 
         return $this->api->sendOrder($data);
     }

@@ -16,6 +16,7 @@ class VerifyCsrfToken extends Middleware
         'webhook.api_transport.get',
         '/webhook/fondy',
         '/order/pay-status',
+        'order.pay-status',
         'save-token-os',
         '/save-token-os',
     ];

@@ -23,7 +23,7 @@ class Fondy
                 'order_desc' => 'Оплата замовлення в Trattoria',
                 'currency' => 'UAH',
                 'amount' => $order->full_price * 100,
-                'response_url' =>  route('order.pay-status'),
+                'response_url' =>  route('pay-status'),
                 'server_callback_url' =>  route('webhook.fondy'),
                 'product_id' => $order->uuid,
                 'lifetime' => 36000,

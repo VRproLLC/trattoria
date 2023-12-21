@@ -8,7 +8,7 @@
                 @if($order && $order->items->count() > 0)
                 <p class="title_other_page">{{trans('main.your_order')}}:</p>
                 <div class="wrap_checkout_section">
-                    <form action="{{route('order.store')}}" method="post" class="read_orders_back">
+                    <form action="{{route('order.store')}}" method="post" class="read_orders_back" id="orderForm">
                         @csrf
                         <div class="product_checkout">
                             @foreach($order->items as $item)
@@ -119,23 +119,22 @@
                                 <p class="title_other_page">Доставка:</p>
                                 <div class="line_wrap_checkbox time_check">
                                     <label class="line_one_checkbox">
-                                        <input type="radio" name="is_delivery" value="1" {{old('delivery', 1) == 1 ? 'checked' : '' }}>
+                                        <input type="radio" name="is_delivery" value="1" {{old('is_delivery', 1) == 1 || $order->is_delivery == 1  ? 'checked' : '' }}>
                                         <span></span>
                                         <p>Доставка</p>
                                     </label>
                                     <label class="line_one_checkbox">
-                                        <input type="radio" name="is_delivery" value="2" {{old('delivery') == 2 ? 'checked' : '' }}>
+                                        <input type="radio" name="is_delivery" value="2" {{old('is_delivery') == 2 || $order->is_delivery == 2  ? 'checked' : '' }}>
                                         <span></span>
                                         <p>Самовывоз</p>
                                     </label>
                                 </div>
                             </div>
-                            <div class="show_hide_field_addr">
+                            <div class="show_hide_field_addr" @if( $order->is_delivery == 2) style="display: none" @endif">
                                 <p class="title_other_page">Адрес доставки:</p>
                                 <div class="wrap_input_delivery_enter">
-                                    <input type="text" class="" name="address" id="google_autocomplete_input">
+                                    <input type="text" class="" name="address" value="{{ $order->address  }}" id="google_autocomplete_input">
                                     <div class="toggle_show_addr">
-
                                     </div>
                                 </div>
                                 <div class="total_sum_delivery">
@@ -149,19 +148,24 @@
                                 <p class="title_other_page">{{trans('main.time_issue')}}:</p>
                                 <div class="line_wrap_checkbox time_check">
                                     <label class="line_one_checkbox">
-                                        <input type="radio" name="time_issue" value="1" {{old('time_issue', 1)==1 ? 'checked' : '' }}>
+                                        <input type="radio" name="time_issue" value="1" {{old('time_issue', 1) == 1 || $order->is_time == 1 ? 'checked' : '' }}>
                                         <span></span>
                                         <p>{{trans('main.time_now')}}</p>
                                     </label>
                                     <label class="line_one_checkbox">
-                                        <input type="radio" name="time_issue" value="2" {{old('time_issue')==2 ? 'checked' : '' }} class="time_step">
+                                        <input type="radio" name="time_issue" value="2" {{old('time_issue')==2  || $order->is_time == 2 ? 'checked' : '' }} class="time_step">
                                         <span></span>
                                         <p>{{trans('main.specify_time')}}</p>
                                     </label>
                                     @include('partials.errors.default', ['name' => 'time_issue'])
                                 </div>
                                 <div class="show_time">
-                                    <input readonly type="text" name="time" value="{{old('time')}}" id="example" placeholder="{{ trans('main.select_time') }}">
+                                    @if($order->time !== null && strtotime($order->time) > strtotime('00:00:00'))
+                                        <input type="text" name="time" value="{{\Carbon\Carbon::parse($order->time)->format('H:i')}}" id="example" placeholder="{{ trans('main.select_time') }}">
+                                        @include('partials.errors.default', ['name' => 'time'])
+                                    @else
+                                        <input type="text" name="time" value="{{ old('time') }}" id="example" placeholder="{{ trans('main.select_time') }}">
+                                    @endif
                                     @include('partials.errors.default', ['name' => 'time'])
                                 </div>
                             </div>
@@ -309,9 +313,12 @@
                 }
                 $('.hours_append').text(selectHour);
             }
-        },
-        confirm: function() {
 
+
+        },
+        confirm: function(data) {
+            $('#example').val( data);
+            formOrderUpdate();
         }
     });
 

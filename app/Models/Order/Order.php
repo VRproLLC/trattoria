@@ -26,7 +26,13 @@ class Order extends Model
         'timestamp_at',
         'iiko_order_number',
         'address',
-        'is_delivery'
+        'is_delivery',
+        'payment_status',
+        'full_price',
+        'date',
+        'time',
+        'deleted_at',
+        'is_time',
     ];
 
     protected $dates = ['deleted_at'];

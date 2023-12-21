@@ -3,14 +3,14 @@
 namespace App\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\SyncController as HomeSyncController;
+use App\Jobs\SynchronizationIikoJob;
 use Encore\Admin\Layout\Column;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Layout\Row;
 
 class SyncController extends Controller
 {
-    public function index(Content $content)
+    public function index(Content $content): Content
     {
         return $content
             ->title('Синхронизация с iiko')
@@ -22,15 +22,11 @@ class SyncController extends Controller
             });
     }
 
-    public function sync()
+    public function sync(): \Illuminate\Http\RedirectResponse
     {
-        $sync = new HomeSyncController();
-        $sync->sync();
+        SynchronizationIikoJob::dispatch();
 
-        admin_success('Успешно синхнонизированно');
-
+        admin_success('Синхронизация запущена');
         return redirect()->back();
     }
-
-
 }

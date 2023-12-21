@@ -90,10 +90,6 @@ class IikoApi
 
     public function getProducts()
     {
-
-
-
-
         $curl = new CurlService();
         $headers = array(
             'Content-type:application/json',
@@ -108,8 +104,6 @@ class IikoApi
         return  $curl
             ->to($this->url.'nomenclature')->withData($post)->withHeaders($headers)->asJson()
             ->post();
-
-
     }
 
 
@@ -141,7 +135,7 @@ class IikoApi
         $headers = array(
             'Content-type:application/json',
             'Accept:application/json',
-            'Timeout:10',
+            'Timeout:15',
             'Authorization:Bearer '.$this->token
         );
         return $curl
