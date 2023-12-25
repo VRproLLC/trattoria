@@ -2179,7 +2179,7 @@ body.onloadStyle:after {
     justify-content: center;
 }
 
-.new_green_count.color{
+.new_green_count.color {
     background: #B1B438;
     color: #FFF;
 }
@@ -2803,8 +2803,241 @@ dottag {
     margin-bottom: 8px;
 }
 
+.wrap_right_left_new_info_order {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+}
 
+.new_top_order_prop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32px 40px;
+    border-bottom: 1px solid #6F758A;
+    width: 100%;
+}
 
+.right_button_operation_order {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 100%;
+    width: 200px;
+    padding: 24px;
+}
+
+.button_success_new {
+    width: 100%;
+    height: calc(50% - 10px);
+    margin-bottom: 20px;
+    border-radius: 6px;
+    background: #75B2EC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFF;
+    text-align: center;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.close_modal_button_new {
+    border-radius: 6px;
+    background: #ECEEF5;
+    color: #34394B;
+    text-align: center;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: calc(50% - 10px);
+    cursor: pointer;
+}
+
+.about_order_info_new_block {
+    overflow: hidden;
+    overflow-y: auto;
+    width: calc(100% - 200px);
+    border-right: 1px solid #6F758A;
+}
+
+.append_about_order_block {
+    overflow-y: hidden;
+    padding: 0px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.link_buttonsremove_remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.about_order_line .brown_number_order,
+.about_order_line .time_date_order {
+    font-size: 32px;
+}
+
+.about_order_line .brown_number_order {
+    margin-right: 32px;
+}
+
+.about_order_line .top_info_new_naqmber_dt {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.about_order_line .lineinfo_status_box {
+    justify-content: flex-start;
+}
+
+.wrap_arr_inf_ordr {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.prop_order_section.new_order_prop_section {
+    padding: 0px;
+}
+
+.remove_button {
+    margin-right: 15px;
+}
+
+.link_buttonsremove_remove svg {
+    width: 100%;
+    height: 100%;
+}
+
+.link_buttonsremove_remove > div {
+    width: 92px;
+    height: 92px;
+    cursor: pointer;
+}
+
+.arrow_back_new {
+    margin-right: 16px;
+}
+
+.list_about_new_info_order_block .line_props_product_info {
+    padding: 20px 40px;
+    border-bottom: 1px solid #ECEEF5;
+    margin-bottom: 0px;
+}
+
+.list_about_new_info_order_block .line_props_product_info > div p {
+    color: #34394B;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.list_about_new_info_order_block .name_products {
+    color: #34394B;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.list_about_new_info_order_block .price_to_prop {
+    padding: 0px;
+    border: none;
+    color: #34394B;
+    text-align: right;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    white-space: nowrap;
+}
+
+.wrap_total_new {
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ECEEF5;
+    color: #462E29;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.green_prices_new {
+    color: #B1B438;
+    text-align: right;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.count_prb {
+    padding: 20px 40px;
+    border-bottom: 1px solid #ECEEF5;
+    color: #34394B;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.about_user_info_new {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 16px 40px;
+}
+
+.avatar_user_new {
+    width: 80px;
+    height: 80px;
+    font-size: 0px;
+    border-radius: 6px;
+    background: #ECEEF5;
+    overflow: hidden;
+    margin-right: 16px;
+}
+
+.avatar_user_new img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info_text_user_new {
+    color: #34394B;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.big_phone_blck {
+    color: #34394B;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    margin-top: 8px;
+}
 
 
 /*-------------------------------------------------Спинер-----------------------------------*/

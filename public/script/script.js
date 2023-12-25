@@ -528,8 +528,8 @@ $(document).ready(function () {
                     success: function (data) {
                         $('.wrap_block_bufet').html(data);
                         if (datamessages.is_need_sound == true) {
-                            var audio = new Audio('../../or.mp3');
-                            audio.play();
+//                            var audio = new Audio('../../or.mp3');
+//                            audio.play();
                         }
                     },
                     error: function (data) {
@@ -567,7 +567,7 @@ $(document).ready(function () {
             }
         });
     });
-    $('body').on('click', '.button_edit_order', function (e) {
+    $('body').on('click', '.button_edit_order, .linkbutton_edit', function (e) {
         e.preventDefault();
         var thisHref = $(this).attr('data-action');
         var thisId = $(this).attr('data-id');
@@ -589,7 +589,7 @@ $(document).ready(function () {
         });
     });
 
-    $('body').on('click', '.button_success_first, .success_change_status, .button_complete_order', function (e) {
+    $('body').on('click', '.button_success_first, .success_change_status, .button_complete_order, .button_success_new', function (e) {
         e.preventDefault();
         var thisHref = $(this).attr('data-action');
         var thisId = $(this).attr('data-id');
@@ -800,14 +800,14 @@ $(document).ready(function () {
         });
     });
 
-    $('body').on('click', '.close_modal_prop_orders', function (e) {
+    $('body').on('click', '.close_modal_prop_orders, .close_modal_button_new', function (e) {
         $('.modal_order_admin').fadeOut(100, function () {
             $('.overlay_modal').fadeOut(100);
         });
     });
 
     //    Отмена заказа
-    $('body').on('click', '.red_button_cancel', function () {
+    $('body').on('click', '.red_button_cancel, .remove_button', function () {
         let thisOrderId = $(this).attr('data-orderId');
 
         $.ajax({
