@@ -26,6 +26,24 @@ class IikoApi
         $this->token = $token;
     }
 
+    public function orderTypes($data)
+    {
+        $curl = new CurlService();
+
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:10',
+            'Authorization:Bearer '.$this->token
+        );
+
+        return $curl
+            ->to($this->url.'deliveries/order_types')
+            ->withData($data)
+            ->withHeaders($headers)->asJson()
+            ->post();
+    }
+
     public function closeOrder($data){
         $curl = new CurlService();
 

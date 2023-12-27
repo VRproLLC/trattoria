@@ -18,6 +18,13 @@ class Iiko
     }
 
 
+    public function orderTypes($organizationIds){
+
+        return $this->api->orderTypes([
+            "organizationIds" => [$organizationIds],
+        ]);
+    }
+
     public function addOrderItems(
         Order $cart
     )
@@ -100,6 +107,12 @@ class Iiko
                 ],
             ]
         ];
+
+        if($cart->is_delivery == 2) {
+            $data["order"]["orderServiceType"] = 'DeliveryByCourier';
+        } else {
+            $data["order"]["orderServiceType"] = 'DeliveryByClient';
+        }
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
             $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ":00.000";
