@@ -1001,7 +1001,7 @@ $(document).ready(function () {
     })
 
     $('input[name="payment_type"]').click(function(){
-        if($(this).data('pay') === 'FONDY'){
+        if($(this).data('pay') === 'Card'){
             $('.show_hide_field_send').slideUp(100);
             $('.show_hide_field_send_pay').slideDown(100);
         } else {
