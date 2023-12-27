@@ -111,7 +111,7 @@ class Iiko
         if($cart->is_delivery == 1) {
             $data["order"]["orderServiceType"] = 'DeliveryByCourier';
         } else {
-            $data["order"]["orderServiceType"] = 'DeliveryByClient';
+            $data["order"]["orderServiceType"] = 'DeliveryPickUp';
         }
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
