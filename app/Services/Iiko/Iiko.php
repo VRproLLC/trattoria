@@ -69,7 +69,7 @@ class Iiko
         ];
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
-            $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ":00.000";
+            $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ".000";
         }
 
         $data['order']['comment'] = $cart->comment ?? '';
