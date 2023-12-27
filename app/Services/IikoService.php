@@ -10,7 +10,6 @@ use App\Models\Product\Category;
 use App\Models\Product\Product;
 use App\Models\Translations\CategoryTranslation;
 use App\Models\Translations\ProductTranslation;
-use App\Services\Iiko\Iiko;
 use App\Services\Iiko\IikoApi;
 use App\Services\Iiko\IikoCardApi;
 use Intervention\Image\Facades\Image;
@@ -20,17 +19,6 @@ class IikoService
     public function sync()
     {
         $accounts = IikoAccount::where('is_iiko', 1)->get();
-
-        foreach ($accounts as $account) {
-            $iiko = new Iiko($account->login, $account->password, null);
-
-            dd($iiko->orderTypes('1eaa052d-153d-4245-98b6-5b15c62c59e6'));
-
-        }
-
-
-
-
 
         foreach ($accounts as $account) {
             $this->organizations($account->id, $account->login, $account->password);
