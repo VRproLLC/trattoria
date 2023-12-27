@@ -109,7 +109,7 @@ class Iiko
         ];
 
         if($cart->is_delivery == 1) {
-            $data["order"]["orderServiceType"] = 'DeliveryByCourier';
+            $data["order"]["orderTypeId"] = '76067ea3-356f-eb93-9d14-1fa00d082c4e';
         }
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
@@ -129,7 +129,6 @@ class Iiko
             ]
         ];
 
-        dd($this->api->sendOrder($data));
 
         return $this->api->sendOrder($data);
     }
