@@ -191,7 +191,9 @@ class OrderController extends Controller
         OrderStoreRequest $request
     )
     {
-
+        if ($request->get('time_issue') == 2 && $request->get('time') === null) {
+            return redirect()->back()->with(['error' => 'Укажите время доставки.']);
+        }
 
         $order = Order::where('uuid', $this->uuid)
             ->where('user_id', auth()->id())
@@ -214,10 +216,6 @@ class OrderController extends Controller
             $order->is_time = 2;
         }
         $order->save();
-
-        if ($request->get('time_issue') == 2 && $request->get('time') === null) {
-            return redirect()->back()->with(['error' => 'Укажите время доставки.']);
-        }
 
         if ($order->organization->account->is_iiko == 1) {
             $sync = new IikoService();
