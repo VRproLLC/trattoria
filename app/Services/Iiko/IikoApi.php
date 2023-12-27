@@ -146,6 +146,23 @@ class IikoApi
 
     }
 
+    public function addOrderItems($data)
+    {
+
+        $curl = new CurlService();
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:15',
+            'Authorization:Bearer '.$this->token
+        );
+        return $curl
+            ->to($this->url.'deliveries/add_items')
+            ->withData($data)
+            ->withHeaders($headers)->asJson()
+            ->post();
+    }
+
     public function getOrder($guid)
     {
         $curl = new CurlService();
@@ -156,7 +173,7 @@ class IikoApi
             'Authorization:Bearer '.$this->token
         );
         $post = array(
-            'organizationId'       => $this->organization,
+            'organizationId' => $this->organization,
             'orderIds'       => [$guid],
 
         );

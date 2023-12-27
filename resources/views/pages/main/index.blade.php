@@ -36,7 +36,11 @@
                                             </div>
                                             <p class="home_addr_line"><img src="{{asset('image/localization.svg')}}" alt="">{{$organization->address}}</p>
                                             <div class="line_new_info">
-                                                <p class="wrap_wrk_infos"><img src="{{asset('image/time_work.svg')}}" alt="">25-35 хв</p>
+                                                @if($organization->delivery_time !== null)
+                                                    <p class="wrap_wrk_infos"><img src="{{asset('image/time_work.svg')}}" alt="">{{ $organization->delivery_time }} хв</p>
+                                                @else
+                                                    <p class="wrap_wrk_infos"><img src="{{asset('image/time_work.svg')}}" alt="">00-00 хв</p>
+                                                @endif
                                                 <p class="wrap_wrk_infos"><img src="{{asset('image/dish.svg')}}" alt="">від {{ round($organization->products->avg('price')) }} ₴ </p>
 
                                                 @if($organization->delta_distance > 0)

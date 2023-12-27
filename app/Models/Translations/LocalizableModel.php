@@ -3,6 +3,7 @@
 namespace App\Models\Translations;
 
 use App\Models\Language;
+use App\Services\LanguageService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
@@ -112,12 +113,6 @@ abstract class LocalizableModel extends Model
 
     public function getCurrentLocale()
     {
-        $language = Language::where('value', app()->getLocale())->first();
-
-        if(!$language){
-            return 1;
-        }
-        return $language->id;
+        return LanguageService::getLang();
     }
-
 }

@@ -30,6 +30,10 @@ class MenuController extends Controller
         $organization = Organization::where('id', Cookie::get('organization_id'))->firstOrFail();
 
         $categories = Category::where('organization_id', $organization->id)
+            ->with([
+                'organization',
+                'products'
+            ])
             ->where('isDeleted', 0)
             ->where('isIncludedInMenu', 1)
             ->orderBy('sort')

@@ -34,7 +34,5 @@
             </div>
         </div>
     </div>
-    <div class="append_product_section">
-    </div>
-
+    <div class="append_product_section"></div>
 @endsection

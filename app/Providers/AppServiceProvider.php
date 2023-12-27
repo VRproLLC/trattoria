@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Language;
+use App\Services\LanguageService;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -28,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        LanguageService::setLang();
+
         Schema::defaultStringLength(191);
 
         View::composer(['partials.header'], function ($view){

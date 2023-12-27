@@ -152,12 +152,14 @@ class OrderController extends Controller
         if (empty($order_item)) {
             $order_item = new OrderItem();
         }
+
         $order_item->order_id = $order->id;
         $order_item->product_id = $request->get('product_id');
         $order_item->amount = $request->get('amount');
         $order_item->price_per_one = $product->price;
+        $order_item->is_status = 1;
 
-        if (!empty($request->get('comment'))) {
+        if ($request->get('comment') !== null) {
             $order_item->comment = $request->get('comment');
         }
 
@@ -229,19 +231,22 @@ class OrderController extends Controller
                 }
             }
         }
-
-        $order->order_status = 1;
-        $order->save();
-
         if ($order->organization->account->is_iiko == 1) {
             $send_order_to_iiko = $this->send_order_to_iiko($order);
             if ($send_order_to_iiko == false) {
                 Log::info('order crate error. Phone: ' . auth()->user()->phone);
                 return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
             }
+
+            $order->order_status = 1;
+            $order->save();
         }
 
-        event(new NewOrderEvent(['action' => 'update_wrapper', 'is_need_sound' => true]));
+        event(new NewOrderEvent([
+            'action' => 'update_wrapper',
+            'is_need_sound' => true
+        ]));
+
         return redirect()->back()->with(['prevent_back' => true]);
     }
 
@@ -325,9 +330,9 @@ class OrderController extends Controller
         if (!isset($result->orderInfo->id)) {
             return false;
         }
-
         $order->iiko_id = $result->orderInfo->id;
         $order->save();
+
         return true;
     }
 

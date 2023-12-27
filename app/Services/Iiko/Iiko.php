@@ -18,6 +18,39 @@ class Iiko
     }
 
 
+    public function addOrderItems(
+        Order $cart
+    )
+    {
+        $items = [];
+
+        foreach ($cart->items->where('is_status', 0) as $cartItem) {
+            $item = [
+                "productId" => $cartItem->product->iiko_id,
+                "amount" => $cartItem->amount,
+                "price" => $cartItem->product->price,
+                "type" => "Product",
+            ];
+            if(isset($cartItem->comment)) {
+                $item['comment'] = $cartItem->comment;
+            }
+            $cartItem->is_status = 1;
+            $cartItem->save();
+
+            $items[] = $item;
+        }
+
+        $data = [
+            "organizationId" => $this->api->organization,
+            "orderId" => $cart->iiko_id,
+            "items" => $items
+        ];
+
+        return $this->api->addOrderItems($data);
+    }
+
+
+
     public function closeOrder($order){
 
         $data = [

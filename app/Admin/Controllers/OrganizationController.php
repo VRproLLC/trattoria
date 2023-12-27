@@ -44,6 +44,7 @@ class OrganizationController extends AdminController
         $grid->column('email', __('Email'));
         $grid->column('location', __('Локация'));
         $grid->column('phone', __('Телефон'));
+        $grid->column('delivery', __('Цена доставки'));
 
         return $grid;
     }
@@ -91,6 +92,8 @@ class OrganizationController extends AdminController
 
         $form->select('ikko_account_id', __('Ikko account id'))->options(IikoAccount::pluck('description', 'id'));
         $form->text('iiko_id', __('Iiko id'));
+        $form->text('delivery', __('Цена доставки (за километр)'));
+        $form->text('delivery_time', __('Время доставки'));
         $form->switch('isActive', __('IsActive'));
         $form->switch('is_auto_work', __('Авто включение и выключение'));
         $form->text('latitude', __('Latitude'));

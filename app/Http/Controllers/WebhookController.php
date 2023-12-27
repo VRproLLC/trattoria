@@ -28,10 +28,12 @@ class WebhookController extends Controller
 
                     $event_info = $request[0]['eventInfo'];
 
-                    $order = Order::where('iiko_id', $event_info['id'])->first();
-                    $order->iiko_order_number = $event_info['order']['number'];
-                    $order->save();
 
+                    if(isset($event_info['order']['number'])) {
+                        $order = Order::where('iiko_id', $event_info['id'])->first();
+                        $order->iiko_order_number = $event_info['order']['number'];
+                        $order->save();
+                    }
                     $this->send_order_status_notification($data['organizationId'], $event_info['id'], $event_info['order']['status']);
                 }
                 if ($request[0]['eventType'] == 'StopListUpdate') {
@@ -48,7 +50,8 @@ class WebhookController extends Controller
     public function send_order_status_notification($organization_id, $order_id, $status)
     {
         $order = Order::where('iiko_id', $order_id)->first();
-        if (!$order) {
+
+        if (empty($order)) {
             return false;
         }
 
@@ -81,6 +84,7 @@ class WebhookController extends Controller
 
             $order->save();
         }
+
         if ($status == OrderEnum::$IIKO_TRANSPORT_CANCELLED) {
             $order->order_status = OrderEnum::$CANCELED;
             $order->save();
@@ -121,6 +125,5 @@ class WebhookController extends Controller
                 }
             }
         }
-
     }
 }

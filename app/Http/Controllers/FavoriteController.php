@@ -32,9 +32,16 @@ class FavoriteController extends Controller
      */
     public function index()
     {
-        $orders = Order::where('user_id', auth()->id())->where('order_status', '<>', 0)->limit(20)->latest()->get();
+        $orders = Order::where('user_id', auth()->id())
+            ->where('order_status', '<>', 0)
+            ->limit(20)
+            ->latest()
+            ->get();
 
-        $events = UserEvent::where('user_id', auth()->id())->latest()->limit(20)->get();
+        $events = UserEvent::where('user_id', auth()->id())
+            ->latest()
+            ->limit(20)
+            ->get();
 
         return view('pages.favorite.index', compact('orders', 'events'));
     }

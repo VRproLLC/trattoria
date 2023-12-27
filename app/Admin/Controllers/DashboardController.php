@@ -212,7 +212,6 @@ class DashboardController extends Controller
         $order->timestamp_at = collect($order->timestamp_at)->merge([
             'completion' => Carbon::now()->toDateTimeString()
         ]);
-
         $order->save();
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
@@ -225,11 +224,15 @@ class DashboardController extends Controller
         $data = request()->validate([
             'id' => 'required'
         ]);
-        $order = Order::where('id', $data['id'])->first();
 
-        return view('partials.modals.admin_order_edit', compact('order'));
+        return view('partials.modals.admin_order_edit', [
+            'order' =>  Order::where('id', $data['id'])->first()
+        ]);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function update(): JsonResponse
     {
         $data = request()->validate([
@@ -243,16 +246,30 @@ class DashboardController extends Controller
         $order->save();
 
         foreach ($data['order_item'] as $key => $amount) {
-            $item = OrderItem::where('order_id', $data['order_id'])->where('id', $key)->firstOrFail();
-            if ($amount == 0) {
-                $item->delete();
-            } else {
-                $item->amount = $amount;
-                $item->save();
+            $item = OrderItem::where('order_id', $data['order_id'])
+                ->where('id', $key)
+                ->first();
+
+            if(isset($item->id)) {
+                if ($amount == 0) {
+                    $item->delete();
+                } else {
+                    if ($amount != $item->amount) {
+                        $item->is_status = 0;
+                    } else $item->is_status = 1;
+
+                    $item->amount = $amount;
+                    $item->save();
+                }
             }
         }
-        $order_controller = new OrderController();
-        $order_controller->calculate_full_price($order);
+
+        if(isset($order->id) && $order->items->count()) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $iiko->addOrderItems($order);
+        }
+
+        (new OrderController())->calculate_full_price($order);
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
 
