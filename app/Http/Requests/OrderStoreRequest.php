@@ -31,7 +31,7 @@ class OrderStoreRequest extends FormRequest
             'comment' => 'nullable|string|max:200',
             'address' => 'nullable|string|max:191',
             'is_delivery' => 'integer',
-            'is_time' => 'integer'
+            'time_issue' => 'integer'
         ];
 //        if(request('time_issue') == 2){
 //            $rules['time'] = 'required|date_format:H:i';

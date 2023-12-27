@@ -209,13 +209,13 @@ class OrderController extends Controller
         $order->is_delivery = $request->get('is_delivery');
         $order->time = date('H:i');
 
-        if ($request->get('is_time') && request('time') !== null) {
+        if ($request->get('time_issue') && request('time') !== null) {
             $order->time = $request->get('time');
             $order->is_time = 2;
         }
         $order->save();
 
-        if ($request->get('is_time') && $request->get('time') === null) {
+        if ($request->get('time_issue') == 2 && $request->get('time') === null) {
             return redirect()->back()->with(['error' => 'Укажите время доставки.']);
         }
 
