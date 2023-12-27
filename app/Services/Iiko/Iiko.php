@@ -85,6 +85,8 @@ class Iiko
             ]
         ];
 
+        dd($data);
+
 
         return $this->api->sendOrder($data);
     }
