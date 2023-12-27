@@ -108,7 +108,7 @@ class Iiko
             ]
         ];
 
-        if($cart->is_delivery == 2) {
+        if($cart->is_delivery == 1) {
             $data["order"]["orderServiceType"] = 'DeliveryByCourier';
         } else {
             $data["order"]["orderServiceType"] = 'DeliveryByClient';
