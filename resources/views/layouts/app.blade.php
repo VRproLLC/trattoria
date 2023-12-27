@@ -18,7 +18,7 @@
     <script src="{{asset('script/jquery.maskedinput.min.js')}}"></script>
     <script src="{{asset('script/rolldate.min.js')}}"></script>
 <!--    <script src="{{asset('script/script.js')}}?v={{config('app.version')}}"></script>-->
-    <script src="{{asset('script/script.js')}}?v=1.67"></script>
+    <script src="{{asset('script/script.js')}}?v=1.68"></script>
     <script src="{{asset('script/maps.js')}}"></script>
 
     @if(!Cookie::has('geos'))
