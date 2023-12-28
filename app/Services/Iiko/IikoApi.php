@@ -172,14 +172,10 @@ class IikoApi
             'Timeout:10',
             'Authorization:Bearer '.$this->token
         );
-
-
         return  $curl
             ->to($this->url.'terminal_groups')->withData($post)->withHeaders($headers)->asJson()
             ->post();
     }
-
-
 
     public function sendOrder($data)
     {

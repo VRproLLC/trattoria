@@ -158,7 +158,10 @@ class DeliveryController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $iiko->updateOrderStatus($order, 'CookingStarted');
+            $data = $iiko->updateOrderStatus($order, 'CookingStarted');
+
+            \Log::log(json_encode($data));
+
         }
 
         Notification::send($order->user, new InProgressNotification($order));
@@ -197,7 +200,10 @@ class DeliveryController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $iiko->updateOrderStatus($order, 'CookingCompleted');
+            $data= $iiko->updateOrderStatus($order, 'CookingCompleted');
+
+
+            \Log::log(json_encode($data));
         }
 
         if ($order->order_status == OrderEnum::$FINISHED) {
@@ -222,7 +228,10 @@ class DeliveryController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $iiko->updateOrderStatus($order, 'Closed');
+            $data = $iiko->updateOrderStatus($order, 'Closed');
+
+
+            \Log::log(json_encode($data));
         }
 
         $order->save();

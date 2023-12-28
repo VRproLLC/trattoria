@@ -164,8 +164,7 @@ class Iiko
                 "isPrepay" =>  $isPrepay
             ]
         ];
-
-
+        
         return $this->api->sendOrder($data);
     }
 
