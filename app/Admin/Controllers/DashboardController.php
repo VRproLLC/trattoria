@@ -160,6 +160,15 @@ class DashboardController extends Controller
         ]);
         $order->save();
 
+        if ($order->organization !== null) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $data = $iiko->updateOrderStatus($order, 'CookingStarted');
+
+            \Log::log(json_encode($data));
+
+        }
+
+
         Notification::send($order->user, new InProgressNotification($order));
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
@@ -193,6 +202,15 @@ class DashboardController extends Controller
 
         $order->save();
 
+        if ($order->organization !== null) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $data= $iiko->updateOrderStatus($order, 'CookingCompleted');
+
+
+            \Log::log(json_encode($data));
+        }
+
+
         if ($order->order_status == OrderEnum::$FINISHED) {
             Notification::send($order->user, new OrderFinishNotification());
         }
@@ -213,6 +231,15 @@ class DashboardController extends Controller
             'completion' => Carbon::now()->toDateTimeString()
         ]);
         $order->save();
+
+        if ($order->organization !== null) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $data = $iiko->updateOrderStatus($order, 'Closed');
+
+
+            \Log::log(json_encode($data));
+        }
+
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
 
