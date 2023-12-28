@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Order\Order;
+use App\Models\Order\OrderType;
 use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,6 +38,11 @@ class Organization extends Model
     public function payment_types(): HasMany
     {
         return $this->hasMany(PaymentType::class, 'organization_id');
+    }
+
+    public function delivery_types(): HasMany
+    {
+        return $this->hasMany(OrderType::class, 'organization_id');
     }
 
     public function order(): HasMany

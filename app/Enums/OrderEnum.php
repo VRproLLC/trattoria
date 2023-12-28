@@ -59,4 +59,9 @@ class OrderEnum
 
         return $status[$statusId] ?? 'Status ' . $statusId;
     }
+
+    public static $DELIVERY = [
+        1 => 'DeliveryByCourier',
+        2 => 'DeliveryPickUp',
+    ];
 }

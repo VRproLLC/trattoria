@@ -61,6 +61,12 @@ class OrderController extends Controller
         $organization = Organization::where('id', Cookie::get('organization_id'))->first();//->firstOrFail();
 
         $order = Order::where('uuid', $this->uuid)
+            ->with([
+                'organization',
+                'organization.delivery_types',
+                'items',
+                'payment_type'
+            ])
             ->where('user_id', auth()->id())
             ->where('organization_id', $this->organization_id)
             ->first();
@@ -198,6 +204,10 @@ class OrderController extends Controller
         }
 
         $order = Order::where('uuid', $this->uuid)
+            ->with([
+                'organization.delivery_types',
+                'organization'
+            ])
             ->where('user_id', auth()->id())
             ->where('organization_id', $this->organization_id)
             ->firstOrFail();
@@ -241,7 +251,6 @@ class OrderController extends Controller
             $order->order_status = 1;
             $order->save();
         }
-
         event(new NewOrderEvent([
             'action' => 'update_wrapper',
             'is_need_sound' => true

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CategoryPay;
 use App\Models\IikoAccount;
+use App\Models\Order\OrderType;
 use App\Models\Organization;
 use App\Models\PaymentType;
 use App\Models\Product\Category;
@@ -20,13 +21,21 @@ class IikoService
     {
         $accounts = IikoAccount::where('is_iiko', 1)->get();
 
-        foreach ($accounts as $account) {
-            $this->organizations($account->id, $account->login, $account->password);
-        }
+//        foreach ($accounts as $account) {
+//            $this->organizations($account->id, $account->login, $account->password);
+//        }
 
         $organizations = Organization::whereHas('account', function ($q) {
             $q->where('is_iiko', 1);
         })->get();
+
+
+        foreach ($organizations as $organization) {
+            $this->orderTypes($organization);
+        }
+
+        die;
+
 
         foreach ($organizations as $organization) {
             $this->productCategories($organization);
@@ -78,6 +87,33 @@ class IikoService
         }
 
         return true;
+    }
+
+
+    public function orderTypes($organization)
+    {
+        $iiko = new IikoApi($organization->account->login, $organization->account->password, $organization->iiko_id);
+        $orderTypes = $iiko->orderTypes([
+            'organizationIds' => [$organization->iiko_id],
+        ]);
+
+        if(isset($orderTypes->orderTypes[0])){
+            $orderTypes = $orderTypes->orderTypes[0];
+
+            if(isset($orderTypes->items)){
+                foreach ($orderTypes->items as $iiko_orderType) {
+                    OrderType::updateOrCreate([
+                        'organization_id' => $organization->id,
+                        'uuid' => $iiko_orderType->id,
+                    ],[
+                        'name' => $iiko_orderType->name,
+                        'orderServiceType' => $iiko_orderType->orderServiceType,
+                        'isDeleted' => $iiko_orderType->isDeleted,
+                        'externalRevision' => $iiko_orderType->externalRevision,
+                    ]);
+                }
+            }
+        }
     }
 
     public function productCategories($organization)

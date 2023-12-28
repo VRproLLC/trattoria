@@ -114,9 +114,8 @@ class PaymentController extends Controller
             }
         }
 
-        $receiver = [];
-
         foreach ($payData as $key => $value){
+            $receiver = [];
             $receiver[] = [
                 'requisites' => [
                     'amount' => array_sum($value),
@@ -124,28 +123,30 @@ class PaymentController extends Controller
                 ],
                 'type' => 'merchant'
             ];
+            $this->settlement($order, $operation_id, $receiver);
         }
+    }
 
-        if (count($receiver)) {
-            $data = [
-                'order_id' => $order->uuid,
-                'operation_id' => $operation_id,
-                'currency' => 'UAH',
-                'order_type' => 'settlement',
-                'amount' => $order->full_price,
-                'order_desc' => 'Разбитие счета',
-                'response_url' => route('main'),
-                'server_callback_url' => route('main'),
-            ];
+    private function settlement(Order  $order, $operation_id, $receiver)
+    {
+        $data = [
+            'order_id' => $order->uuid,
+            'operation_id' => $operation_id,
+            'currency' => 'UAH',
+            'order_type' => 'settlement',
+            'amount' => $order->full_price,
+            'order_desc' => 'Разбитие счета',
+            'response_url' => route('main'),
+            'server_callback_url' => route('main'),
+        ];
 
-            $data['receiver'] = $receiver;
+        $data['receiver'] = $receiver;
 
-            try {
-                $paymentResponse = \Cloudipsp\Order::settlement($data);
-                $paymentResponse->getData();
-            } catch (ApiException $e) {
-                Log::error('ApiException Error: ' . $e->getMessage());
-            }
+        try {
+            $paymentResponse = \Cloudipsp\Order::settlement($data);
+            $paymentResponse->getData();
+        } catch (ApiException $e) {
+            Log::error('ApiException Error: ' . $e->getMessage());
         }
     }
 }

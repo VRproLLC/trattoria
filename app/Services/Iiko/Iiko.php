@@ -2,6 +2,7 @@
 
 namespace App\Services\Iiko;
 
+use App\Enums\OrderEnum;
 use App\Models\Order\Order;
 use App\Models\Product\Category;
 use Illuminate\Support\Facades\Log;
@@ -108,8 +109,18 @@ class Iiko
             ]
         ];
 
+        if ($cart->organization->delivery_types !== null){
+            $delivery = $cart->organization->delivery_types
+                ->where('orderServiceType', OrderEnum::$DELIVERY[$cart->is_delivery])
+                ->first();
+
+//            if(isset($delivery->id)){
+//                $data["order"]["orderTypeId"] = $delivery->uuid;
+//            }
+        }
+
         if($cart->is_delivery == 1) {
-            $data["order"]["orderTypeId"] = '76067ea3-356f-eb93-9d14-1fa00d082c4e';
+           // $data["order"]["orderTypeId"] = 'DeliveryByCourier';
         }
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
