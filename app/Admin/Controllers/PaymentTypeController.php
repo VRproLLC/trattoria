@@ -26,6 +26,8 @@ class PaymentTypeController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new PaymentType());
+        $grid->model()
+            ->orderBy('id', 'desc');
 
         $grid->column('id', __('#'));
         $grid->column('organization.address', __('Организация'));

@@ -24,30 +24,32 @@ class WebhookController extends Controller
         try {
             if (isset($request[0]['eventType'])) {
                 if ($request[0]['eventType'] == 'DeliveryOrderUpdate') {
-                    $data = $request[0];
-
                     $event_info = $request[0]['eventInfo'];
 
-
-                    if(isset($event_info['order']['number'])) {
+                    if(isset($event_info['id'])) {
                         $order = Order::where('iiko_id', $event_info['id'])->first();
-                        $order->iiko_order_number = $event_info['order']['number'];
+                        if (isset($event_info['order']['number'])) {
+                            $order->iiko_order_number = $event_info['order']['number'];
+                        }
                         $order->save();
+
+                        $this->send_order_status_notification($event_info['id'], $event_info['order']['status']);
                     }
-                    $this->send_order_status_notification($data['organizationId'], $event_info['id'], $event_info['order']['status']);
                 }
+
                 if ($request[0]['eventType'] == 'StopListUpdate') {
                     $this->update_stop_list($request[0]['organizationId']);
                 }
-            }
 
+            }
         } catch (\Exception $exception) {
             Log::info('Webhook error: ' . $exception);
         }
+
         return response()->json('success', 200);
     }
 
-    public function send_order_status_notification($organization_id, $order_id, $status)
+    public function send_order_status_notification($order_id, $status)
     {
         $order = Order::where('iiko_id', $order_id)->first();
 
@@ -55,7 +57,7 @@ class WebhookController extends Controller
             return false;
         }
 
-        if ($status == OrderEnum::$IIKO_TRANSPORT_COOKING_STARTED && $order->order_status != OrderEnum::$IIKO_TRANSPORT_STATUSES[OrderEnum::$IIKO_TRANSPORT_COOKING_STARTED]) {
+        if ($status == OrderEnum::$IIKO_TRANSPORT_COOKING_STARTED) {
             $order->order_status = OrderEnum::$IN_PROCESS;
             $order->timestamp_at = collect($order->timestamp_at)->merge([
                 'in_process' => Carbon::now()->toDateTimeString()
@@ -65,7 +67,7 @@ class WebhookController extends Controller
             Notification::send($order->user, new InProgressNotification($order));
         }
 
-        if ($status == OrderEnum::$IIKO_TRANSPORT_COOKING_COMPLETED && $order->order_status != OrderEnum::$IIKO_TRANSPORT_STATUSES[OrderEnum::$IIKO_TRANSPORT_COOKING_COMPLETED]) {
+        if ($status == OrderEnum::$IIKO_TRANSPORT_COOKING_COMPLETED) {
             $order->order_status = OrderEnum::$FINISHED;
             $order->timestamp_at = collect($order->timestamp_at)->merge([
                 'finished' => Carbon::now()->toDateTimeString()
@@ -84,15 +86,15 @@ class WebhookController extends Controller
 
             $order->save();
         }
-
         if ($status == OrderEnum::$IIKO_TRANSPORT_CANCELLED) {
             $order->order_status = OrderEnum::$CANCELED;
             $order->save();
-
             Notification::send($order->user, new OrderCancellationNotification());
         }
+
         return true;
     }
+
 
     public function update_stop_list($organization_id)
     {

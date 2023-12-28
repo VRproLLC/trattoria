@@ -10,7 +10,7 @@ return [
     'telephone'     => 'Телефон',
     'exit'     => 'Выход',
     'delete'     => 'Удалить аккаунт',
-
+    'pay_online'  => 'Оплата онлайн',
     'title_delete' => 'Вы уверены?',
     'text_delete' => 'Аккаунт будет удален навсегда!',
     'confirmButtonText_delete' => 'Удалить',
