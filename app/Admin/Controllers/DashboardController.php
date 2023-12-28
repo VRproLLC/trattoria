@@ -162,7 +162,8 @@ class DashboardController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $iiko->updateOrderStatus($order, 'CookingStarted');
+            $data = $iiko->updateOrderStatus($order, 'CookingStarted');
+
         }
 
 
@@ -170,7 +171,7 @@ class DashboardController extends Controller
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
 
-        return response()->json(['success' => 'true']);
+        return response()->json(['success' => 'true', $data ?? []]);
     }
 
     public function finish_order(): JsonResponse
@@ -201,7 +202,7 @@ class DashboardController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-           $iiko->updateOrderStatus($order, 'CookingCompleted');
+            $data = $iiko->updateOrderStatus($order, 'CookingCompleted');
 
         }
 
@@ -211,7 +212,7 @@ class DashboardController extends Controller
         }
         event(new NewOrderEvent(['action' => 'update_wrapper']));
 
-        return response()->json(['success' => 'true']);
+        return response()->json(['success' => 'true', $data ?? []]);
     }
 
     public function give_away_order(): JsonResponse
@@ -229,13 +230,13 @@ class DashboardController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $iiko->updateOrderStatus($order, 'Closed');
+            $data = $iiko->updateOrderStatus($order, 'Closed');
         }
 
 
         event(new NewOrderEvent(['action' => 'update_wrapper']));
+        return response()->json(['success' => 'true', $data ?? []]);
 
-        return response()->json(['success' => 'true']);
     }
 
     public function edit()
