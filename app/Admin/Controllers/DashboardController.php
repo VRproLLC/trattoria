@@ -162,10 +162,7 @@ class DashboardController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $data = $iiko->updateOrderStatus($order, 'CookingStarted');
-
-            \Log::log(json_encode($data));
-
+            $iiko->updateOrderStatus($order, 'CookingStarted');
         }
 
 
@@ -204,10 +201,8 @@ class DashboardController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $data= $iiko->updateOrderStatus($order, 'CookingCompleted');
+           $iiko->updateOrderStatus($order, 'CookingCompleted');
 
-
-            \Log::log(json_encode($data));
         }
 
 
@@ -234,10 +229,7 @@ class DashboardController extends Controller
 
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $data = $iiko->updateOrderStatus($order, 'Closed');
-
-
-            \Log::log(json_encode($data));
+            $iiko->updateOrderStatus($order, 'Closed');
         }
 
 

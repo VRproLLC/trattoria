@@ -68,6 +68,7 @@ class Iiko
             "deliveryStatus" => $status,
         ];
 
+
         return $this->api->updateStatusOrder($data);
     }
 
@@ -164,7 +165,7 @@ class Iiko
                 "isPrepay" =>  $isPrepay
             ]
         ];
-        
+
         return $this->api->sendOrder($data);
     }
 
