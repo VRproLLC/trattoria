@@ -43,6 +43,41 @@ class IikoApi
             ->withHeaders($headers)->asJson()
             ->post();
     }
+    public function updateStatusOrder($data)
+    {
+        $curl = new CurlService();
+
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:10',
+            'Authorization:Bearer '.$this->token
+        );
+
+        return $curl
+            ->to($this->url.'deliveries/update_order_delivery_status')
+            ->withData($data)
+            ->withHeaders($headers)->asJson()
+            ->post();
+    }
+
+    public function getStatus($data)
+    {
+        $curl = new CurlService();
+
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:10',
+            'Authorization:Bearer '.$this->token
+        );
+
+        return $curl
+            ->to($this->url.'commands/status')
+            ->withData($data)
+            ->withHeaders($headers)->asJson()
+            ->post();
+    }
 
     public function closeOrder($data){
         $curl = new CurlService();

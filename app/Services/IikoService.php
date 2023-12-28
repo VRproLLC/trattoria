@@ -21,21 +21,17 @@ class IikoService
     {
         $accounts = IikoAccount::where('is_iiko', 1)->get();
 
-//        foreach ($accounts as $account) {
-//            $this->organizations($account->id, $account->login, $account->password);
-//        }
+        foreach ($accounts as $account) {
+            $this->organizations($account->id, $account->login, $account->password);
+        }
 
         $organizations = Organization::whereHas('account', function ($q) {
             $q->where('is_iiko', 1);
         })->get();
 
-
         foreach ($organizations as $organization) {
             $this->orderTypes($organization);
         }
-
-        die;
-
 
         foreach ($organizations as $organization) {
             $this->productCategories($organization);

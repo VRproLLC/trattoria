@@ -57,6 +57,31 @@ class Iiko
         return $this->api->addOrderItems($data);
     }
 
+    public function updateOrderStatus(
+        Order $order,
+        string $status
+    ){
+
+        $data = [
+            "organizationId" => $this->api->organization,
+            "orderId" => $order->iiko_id,
+            "deliveryStatus" => $status,
+        ];
+
+        return $this->api->updateStatusOrder($data);
+    }
+
+    public function getStatus(
+        Order $order
+    ){
+
+        $data = [
+            "organizationId" => '1eaa052d-153d-4245-98b6-5b15c62c59e6',
+            "correlationId" => $order->iiko_id,
+        ];
+
+        return $this->api->getStatus($data);
+    }
 
 
     public function closeOrder($order){

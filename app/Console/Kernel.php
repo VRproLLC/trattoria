@@ -26,6 +26,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('zbara:time-work')->everyFiveMinutes();
         $schedule->command('zbara:notifications')->everyMinute();
+        $schedule->command('trattoria:synchronization')->everyThreeHours();
     }
 
     /**

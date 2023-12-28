@@ -156,9 +156,16 @@ class DeliveryController extends Controller
         ]);
         $order->save();
 
+        if ($order->organization !== null) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $iiko->updateOrderStatus($order, 'CookingStarted');
+        }
+
         Notification::send($order->user, new InProgressNotification($order));
 
-        event(new NewOrderEvent(['action' => 'update_wrapper']));
+        event(new NewOrderEvent([
+            'action' => 'update_wrapper'
+        ]));
 
         return response()->json(['success' => 'true']);
     }
@@ -186,8 +193,12 @@ class DeliveryController extends Controller
         $order->timestamp_at = collect($order->timestamp_at)->merge([
             'finished' => Carbon::now()->toDateTimeString()
         ]);
-
         $order->save();
+
+        if ($order->organization !== null) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $iiko->updateOrderStatus($order, 'CookingCompleted');
+        }
 
         if ($order->order_status == OrderEnum::$FINISHED) {
             Notification::send($order->user, new OrderFinishNotification());
@@ -208,6 +219,11 @@ class DeliveryController extends Controller
         $order->timestamp_at = collect($order->timestamp_at)->merge([
             'completion' => Carbon::now()->toDateTimeString()
         ]);
+
+        if ($order->organization !== null) {
+            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
+            $iiko->updateOrderStatus($order, 'Closed');
+        }
 
         $order->save();
 
