@@ -2,8 +2,6 @@
 
 namespace App\Rules;
 
-use App\Libs\Str;
-use App\Models\Auth\RegisterNewUsers;
 use App\Models\RegisterUsers;
 use Illuminate\Contracts\Validation\Rule;
 
