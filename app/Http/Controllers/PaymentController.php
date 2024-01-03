@@ -6,11 +6,11 @@ use App\Models\Fop;
 use App\Models\Order\Order;
 use App\Models\Organization;
 use App\Services\Iiko\Iiko;
+use Cloudipsp\Configuration;
 use Cloudipsp\Exception\ApiException;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Request;
-
 
 class PaymentController extends Controller
 {
@@ -44,7 +44,7 @@ class PaymentController extends Controller
                             'payment_status' => 1
                         ]);
                         $this->createdOrder($orderData);
-                        $this->payments($orderData, $order['order_id']);
+                        $this->payments($orderData, $order);
                         break;
 
                     case self::ORDER_DECLINED:
@@ -91,14 +91,17 @@ class PaymentController extends Controller
     }
 
     public function payments(
-        Order $order,
-        string $operation_id
+        Order $orderData,
+        array $order
     )
     {
-        $payData = [];
-        $payDateNot = [];
+        Configuration::setMerchantId('1537351');
+        Configuration::setSecretKey('m2fFeTqLLHTWbvShDbYkNqSz7idhEjnx');
+        Configuration::setApiVersion('2.0');
 
-        foreach ($order->items as $item){
+        $payData = [];
+
+        foreach ($orderData->items as $item){
             $fop = Fop::query()
                 ->where('is_active', 1)
                 ->whereJsonContains('category', (string) $item->product->categoryPayId)
@@ -106,47 +109,36 @@ class PaymentController extends Controller
 
             if(isset($fop)){
                 $payData[$fop->id][$item->id] = $item->product->price;
-            } else {
-                $payDateNot[] = [
-                    'price' => $item->product->price,
-                    'category' => $item->product->categoryPayId
-                ];
             }
         }
 
+        $receiver = [];
+
         foreach ($payData as $key => $value){
-            $receiver = [];
             $receiver[] = [
                 'requisites' => [
-                    'amount' => array_sum($value),
+                    'amount' => array_sum($value) * 100,
                     'merchant_id' => Fop::find($key)->code_id,
                 ],
                 'type' => 'merchant'
             ];
-            $this->settlement($order, $operation_id, $receiver);
         }
-    }
 
-    private function settlement(Order  $order, $operation_id, $receiver)
-    {
-        $data = [
-            'order_id' => $order->uuid,
-            'operation_id' => $operation_id,
-            'currency' => 'UAH',
-            'order_type' => 'settlement',
-            'amount' => $order->full_price,
-            'order_desc' => 'Разбитие счета',
-            'response_url' => route('main'),
-            'server_callback_url' => route('main'),
-        ];
+        if (count($receiver)) {
+            $data = [
+                'operation_id' => $order['order_id'],
+                'currency' => 'UAH',
+                'amount' => $order['amount'],
+                'order_desc' => 'Разбитие счета',
+            ];
+            $data['receiver'] = $receiver;
 
-        $data['receiver'] = $receiver;
-
-        try {
-            $paymentResponse = \Cloudipsp\Order::settlement($data);
-            $paymentResponse->getData();
-        } catch (ApiException $e) {
-            Log::error('ApiException Error: ' . $e->getMessage());
+            try {
+                $paymentResponse = \Cloudipsp\Order::settlement($data);
+                $paymentResponse->getData();
+            } catch (ApiException $e) {
+                Log::error('ApiException Error: ' . $e->getMessage());
+            }
         }
     }
 }
