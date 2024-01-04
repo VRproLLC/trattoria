@@ -41,6 +41,7 @@ class FopController extends AdminController
             return Organization::whereIn('id', $organizations)->pluck('fullName')->implode(', ');
         });
         $grid->column('is_active', __('Статус'))->bool();
+        $grid->column('is_default', __('Транзитный фоп'))->bool();
         $grid->column('created_at', __('Создан'))->display(function ($created_at) {
             return Carbon::parse($created_at)->format('d.m.Y H:i:s');
         });
@@ -87,6 +88,9 @@ class FopController extends AdminController
         $form->text('code_id', __('ID мерчанта'))->required();
         $form->text('code_key', __('Ключ платежа'))->required();
         $form->switch('is_active', __('Статус'))->default(1);
+        $form->switch('is_default', __('Транзитный фоп'))
+            ->help('Транзитный фоп будет использоваться при оплате по умолчанию, только один может быть.')
+            ->default(0);
         $form->multipleSelect('category', __('Категории оплаты'))->options(CategoryPay::get()->pluck('name', 'id'))->required();
         $form->multipleSelect('organizations', __('Точки'))->options(Organization::get()->pluck('fullName', 'id'))->required();
 

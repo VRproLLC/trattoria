@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderEnum;
 use App\Events\NewOrderEvent;
+use App\Http\Requests\Order\OrderCancellationRequest;
+use App\Http\Requests\Order\OrderItemCommentRequest;
+use App\Http\Requests\Order\OrderUpdateRequest;
 use App\Http\Requests\OrderStoreRequest;
 use App\Models\IikoAccount;
 use App\Models\Organization;
@@ -11,15 +14,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AddToCartRequest;
 use App\Models\Order\Order;
 use App\Models\Order\OrderItem;
+use App\Models\PaymentOrder;
 use App\Models\Product\Product;
 use App\Notifications\InProgressNotification;
 use App\Notifications\OrderFinishNotification;
 use App\Payments\Fondy;
+use App\Services\CalculatorService;
 use App\Services\Iiko\Iiko;
 use App\Services\IikoService;
+use App\Services\OrderService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Session\SessionManager;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Cookie;
@@ -32,7 +42,7 @@ class OrderController extends Controller
     /**
      * @var SessionManager|Store|mixed
      */
-    public $uuid;
+    public  $uuid;
 
     public $organization_id;
 
@@ -80,8 +90,19 @@ class OrderController extends Controller
         return view('pages.order.pay_status');
     }
 
-
-    public function fondy(int $id, Fondy $fondy)
+    /**
+     * Создание онлайн заказа, подготовка ссылки для оплаты.
+     *
+     * @param int $id
+     * @param Fondy $fondy
+     * @param OrderService $service
+     * @return Application|RedirectResponse|Redirector
+     */
+    public function fondy(
+        int $id,
+        Fondy $fondy,
+        OrderService $service
+    )
     {
         $order = Order::query()
             ->where('id', $id)
@@ -89,27 +110,28 @@ class OrderController extends Controller
             ->first();
 
         if($order){
-            if ($order->organization->account->is_iiko == 1) {
-                $sync = new IikoService();
-                $stop_list = $sync->stop_lists($order->organization);
+            $orderStopList = $service->getStopList($order);
 
-                if ($stop_list != false) {
-                    foreach ($order->items as $order_item) {
-                        if (array_key_exists($order_item->product->iiko_id, $stop_list) && $stop_list[$order_item->product->iiko_id] == 0) {
-                            return redirect()->back()->with(['error' => 'К сожалению товар "' . $order_item->product->name . '" закончился, удалите его из корзины и оформите заказ.']);
-                        }
-                    }
-                }
+            if(is_array($orderStopList)) {
+                return redirect()->back()->with($orderStopList);
             }
 
             $createdLink = $fondy->createdLink($order);
 
             if ($createdLink['status'] == 'success') {
+                PaymentOrder::create([
+                    'public_id' => \Str::uuid(),
+                    'order_id' => $order->id,
+                    'user_id' => auth()->id(),
+                    'amount' => $order->full_price,
+                ]);
+
                 $order->update([
                     'order_status' => 1,
                     'payment_status' => 0,
                     'date' => Carbon::now(),
                 ]);
+
                 return redirect($createdLink['checkout_url']);
             }
         }
@@ -140,7 +162,10 @@ class OrderController extends Controller
     /**
      * @throws \Exception
      */
-    public function add_to_cart(AddToCartRequest $request)
+    public function add_to_cart(
+        AddToCartRequest $request,
+        CalculatorService $calculatorService
+    )
     {
         $order = Order::where('uuid', $this->uuid)
             ->where('user_id', auth()->id())
@@ -151,9 +176,12 @@ class OrderController extends Controller
                 'organization_id' => $this->organization_id
             ]);
 
-        $order_item = OrderItem::where('order_id', $order->id)->where('product_id', $request->get('product_id'))->first();
+        $order_item = OrderItem::where('order_id', $order->id)
+            ->where('product_id', $request->get('product_id'))
+            ->first();
 
-        $product = Product::where('id', $request->get('product_id'))->firstOrFail();
+        $product = Product::where('id', $request->get('product_id'))
+            ->firstOrFail();
 
         if (empty($order_item)) {
             $order_item = new OrderItem();
@@ -168,41 +196,33 @@ class OrderController extends Controller
         if ($request->get('comment') !== null) {
             $order_item->comment = $request->get('comment');
         }
-
         $order_item->save();
 
         if ($request->get('amount') == 0) {
             $order_item->delete();
         }
 
-        $this->calculate_full_price($order);
+        $calculatorService->calculate_full_price($order);
 
-        return response()->json(['success' => true, 'total_amount' => $order->items->sum('amount'), 'full_price' => $order->full_price]);
+        return response()->json([
+            'success' => true,
+            'total_amount' => $order->items->sum('amount'),
+            'full_price' => $order->full_price
+        ]);
     }
 
-
-    public function calculate_full_price($order)
-    {
-        $full_price = 0;
-
-        foreach ($order->items as $item) {
-            $full_price += $item->price_per_one * $item->amount;
-        }
-
-        $order->full_price = $full_price;
-        $order->save();
-
-        return $full_price;
-    }
-
+    /**
+     * Сохранение заказа
+     *
+     * @param OrderStoreRequest $request
+     * @param OrderService $service
+     * @return RedirectResponse
+     */
     public function store(
-        OrderStoreRequest $request
+        OrderStoreRequest $request,
+        OrderService $service
     )
     {
-        if ($request->get('time_issue') == 2 && $request->get('time') === null) {
-            return redirect()->back()->with(['error' => 'Укажите время доставки.']);
-        }
-
         $order = Order::where('uuid', $this->uuid)
             ->with([
                 'organization.delivery_types',
@@ -221,200 +241,126 @@ class OrderController extends Controller
         ]);
         $order->address = $request->get('address');
         $order->is_delivery = $request->get('is_delivery');
-        $order->time = date('H:i');
 
         if ($request->get('time_issue') && request('time') !== null) {
             $order->time = $request->get('time');
             $order->is_time = 2;
+        } else {
+            $order->time = date('H:i');
         }
         $order->save();
 
-        if ($order->organization->account->is_iiko == 1) {
-            $sync = new IikoService();
-            $stop_list = $sync->stop_lists($order->organization);
+        /**
+         * Проверка на стоп лист
+         */
+        $orderStopList = $service->getStopList($order);
 
-            if ($stop_list != false) {
-                foreach ($order->items as $order_item) {
-                    if (array_key_exists($order_item->product->iiko_id, $stop_list) && $stop_list[$order_item->product->iiko_id] == 0) {
-                        return redirect()->back()->with(['error' => 'К сожалению товар "' . $order_item->product->name . '" закончился, удалите его из корзины и оформите заказ.']);
-                    }
-                }
-            }
+        if(is_array($orderStopList)) {
+            return redirect()->back()->with($orderStopList);
         }
+
         if ($order->organization->account->is_iiko == 1) {
-            $send_order_to_iiko = $this->send_order_to_iiko($order);
-            if ($send_order_to_iiko == false) {
-                Log::info('order crate error. Phone: ' . auth()->user()->phone);
+            $send_order_to_iiko = $service->createdOrderToIiko($order);
+
+            if (!$send_order_to_iiko) {
                 return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
             }
 
             $order->order_status = 1;
             $order->save();
         }
+
         event(new NewOrderEvent([
             'action' => 'update_wrapper',
             'is_need_sound' => true
         ]));
 
-        return redirect()->back()->with(['prevent_back' => true]);
+        return redirect()->back()->with([
+            'prevent_back' => true
+        ]);
     }
 
 
-    public function comment()
+    /**
+     * Комментарии к заказу (блюда).
+     *
+     * @param OrderItemCommentRequest $request
+     * @return JsonResponse
+     */
+    public function comment(
+        OrderItemCommentRequest $request
+    )
     {
-        $data = request()->validate([
-            'id' => 'required|string|max:200',
-            'comment' => 'nullable|string|max:200',
-        ]);
+        $order = OrderItem::query()
+            ->where('id', $request->get('id'))
+            ->firstOrFail();
 
-        $order = OrderItem::where('id', request('id'))->firstOrFail();
-
-        $order->comment = request('comment');
+        $order->comment = $request->get('comment');
         $order->save();
 
         return response()->json(['success' => true]);
     }
 
-    public function cancellation()
+    /**
+     * Отмена заказа
+     *
+     * @param OrderCancellationRequest $request
+     * @return JsonResponse
+     */
+    public function cancellation(
+        OrderCancellationRequest $request
+    )
     {
-        $data = request()->validate([
-            'id' => 'required|exists:orders,id',
-        ]);
-        $order = Order::where('id', \request('id'))
+        $order = Order::where('id', $request->get('id'))
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
         if($order->order_status == OrderEnum::$NEW_ORDER) {
             $organization = Organization::where('id', $order->organization_id)->firstOrFail();
 
-            if ($organization) {
-                if($organization->account->is_iiko == 1) {
-                    $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
-                    $data = $iiko->closeOrder($order);
-                }
+            if ($organization && $organization->account && $organization->account->is_iiko == 1) {
+                $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
+                $iiko->closeOrder($order);
             }
 
             $order->update([
                 'order_status' => OrderEnum::$CANCELED
             ]);
 
-            return response()->json(['success' => 1, $data]);
+            return response()->json([
+                'success' => 1
+            ]);
         }
-        return response()->json(['success' => 0]);
+        return response()->json([
+            'success' => 0
+        ]);
     }
 
-    public function update()
+    /**
+     * Обновление данных заказа
+     *
+     * @param OrderUpdateRequest $request
+     * @return JsonResponse
+     */
+    public function update(
+        OrderUpdateRequest $request
+    )
     {
-        $data = request()->validate([
-            'payment_type' => 'required|exists:payment_types,id',
-            'comment' => 'nullable|string|max:200',
-            'address' => 'nullable|string|max:200',
-            'time' => 'nullable|string|max:200',
-            'is_delivery' => 'required|integer',
-            'time_issue' => 'required|integer',
-        ]);
         $order = Order::where('uuid', $this->uuid)
             ->where('user_id', auth()->id())
             ->where('organization_id', $this->organization_id)
             ->firstOrFail();
 
-        $order->payment_type_id = request('payment_type');
-        $order->comment = request('comment');
-        $order->is_delivery = request('is_delivery');
-        $order->address = request('address');
-        $order->is_time = request('time_issue');
-        $order->time = request('time');
+        $order->payment_type_id = $request->get('payment_type');
+        $order->comment = $request->get('comment');
+        $order->is_delivery = $request->get('is_delivery');
+        $order->address = $request->get('address');
+        $order->is_time = $request->get('time_issue');
+        $order->time = $request->get('time');
         $order->save();
 
-        return response()->json(['success' => true]);
-    }
-
-    public function send_order_to_iiko(Order $order)
-    {
-        $organization = Organization::where('id', Cookie::get('organization_id'))->firstOrFail();
-
-        $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
-        $result = $iiko->addOrder($order);
-
-        if (!isset($result->orderInfo->id)) {
-            return false;
-        }
-        $order->iiko_id = $result->orderInfo->id;
-        $order->save();
-
-        return true;
-    }
-
-    public function update_status_from_iiko()
-    {
-        $orders = Order::whereNotNull('iiko_id')
-            ->where('order_status', '<>', '4')
-            ->where('order_status', '<>', '5')
-            ->where('created_at', '>=', Carbon::now()->startOfDay())
-            ->where('created_at', '<=', Carbon::now()->endOfDay())
-            ->get();
-
-        foreach ($orders as $order) {
-            $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
-            $result = $iiko->getOrder($order->iiko_id);
-//            if($order->iiko_id == '4fffeabe-37e7-48be-a106-cceb72ef724b'){
-//                dd($result);
-//            }
-//            if($order->id == 224){
-//                dd($result);
-//            }
-//            if(isset($result['status']) && $result['status'] == 'Готовится' && $order->order_status != OrderEnum::$IN_PROCESS){
-//                $order->order_status = OrderEnum::$IN_PROCESS;
-//                $order->save();
-//
-//                Notification::send($order->user, new InProgressNotification($order));
-//                continue;
-//            }
-//
-//            if($result['status'] == 'Готово' && $order->order_status != OrderEnum::$FINISHED){
-//                $order->order_status = OrderEnum::$FINISHED;
-//                $order->save();
-//                Notification::send($order->user, new OrderFinishNotification());
-//
-//            }
-//            if($result['status'] == 'Закрыта' && $order->order_status != OrderEnum::$GIV_AWAY){
-//                $order->order_status = OrderEnum::$GIV_AWAY;
-//                $order->save();
-//            }
-//            if($result['status'] == 'Отменена' && $order->order_status != OrderEnum::$CANCELED){
-//                $order->order_status = OrderEnum::$CANCELED;
-//                $order->save();
-//            }
-
-        }
-
-
-        $products = Product::where('in_stop_list', 1)->get();
-
-        foreach ($products as $product) {
-            $product->in_stop_list = 0;
-            $product->save();
-        }
-
-        $sync_controller = new IikoService();
-
-        $organizations = Organization::whereHas('account', function ($q) {
-            $q->where('is_iiko', 1);
-        })->get();
-
-        foreach ($organizations as $organization) {
-            $stop_lists = $sync_controller->stop_lists($organization);
-            if ($stop_lists != false) {
-                foreach ($stop_lists as $iiko_id => $value) {
-                    if ($value <= 0) {
-                        $product = Product::where('iiko_id', $iiko_id)->first();
-                        if ($product) {
-                            $product->in_stop_list = 1;
-                            $product->save();
-                        }
-                    }
-                }
-            }
-        }
+        return response()->json([
+            'success' => true
+        ]);
     }
 }

@@ -65,10 +65,7 @@ Route::middleware('auth')->name('order.')->prefix('order')->group(function () {
     Route::post('/cancellation', 'OrderController@cancellation')->name('cancellation');
     Route::post('/basket', 'OrderController@basket')->name('basket');
     Route::post('/update', 'OrderController@update')->name('update');
-    Route::post('/comment', 'OrderController@comment')->name('comment');
-
-
-    Route::get('/update_status_from_iiko', 'OrderController@update_status_from_iiko')->name('update_status_from_iiko');
+    Route::post('/comment', 'OrderController@comment')->name('comment');;
 });
 
 Route::name('password.')->prefix('password')->group(function () {

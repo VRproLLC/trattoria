@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Order;
 
-use App\Rules\TimeOrderRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class OrderStoreRequest extends FormRequest
+class OrderItemCommentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,15 +21,11 @@ class OrderStoreRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'number_of_devices' => 'required|numeric|min:0',
-            'payment_type' => 'nullable|exists:payment_types,id',
+            'id' => 'required|string|max:200',
             'comment' => 'nullable|string|max:200',
-            'address' => 'nullable|string|max:191',
-            'is_delivery' => 'integer',
-            'time_issue' => ['integer', new TimeOrderRule()],
         ];
     }
 }

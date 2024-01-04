@@ -49,7 +49,6 @@ class ClientsController extends Controller
 
         $orders = $user->orders()->orderBy('id', 'desc');
 
-
         if(\request('organization')){
             $orders->where('organization_id', \request('organization'));
         }
@@ -81,8 +80,6 @@ class ClientsController extends Controller
                 $result[$item->product_id] = $item->amount;
             }
         }
-
-
         return $content
             ->title(sprintf('Пользователь %s, заказ %s', $user->name, $order->iiko_order_number ?? 0))
             ->description('Информация о заказе')

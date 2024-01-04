@@ -8,21 +8,29 @@ use App\Models\Organization;
 use App\Services\Iiko\Iiko;
 use Cloudipsp\Configuration;
 use Cloudipsp\Exception\ApiException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Обработка платежей
+ *
+ * Class PaymentController
+ *
+ * @package App\Http\Controllers
+ */
 class PaymentController extends Controller
 {
     const ORDER_APPROVED = 'approved';
     const ORDER_DECLINED = 'declined';
     const ORDER_EXPIRED = 'expired';
-    const ORDER_PROCESSING = 'processing';
-    const ORDER_CREATED = 'created';
-    const ORDER_REVERSED = 'reversed';
-    const ORDER_SEPARATOR = "_";
 
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function webhook(
         Request $request
     )
@@ -43,6 +51,11 @@ class PaymentController extends Controller
                         $orderData->update([
                             'payment_status' => 1
                         ]);
+
+                        $orderData->payment->update([
+                            'status' => 1,
+                        ]);
+
                         $this->createdOrder($orderData);
                         $this->payments($orderData, $order);
                         break;
@@ -51,17 +64,26 @@ class PaymentController extends Controller
                         $orderData->update([
                             'payment_status' => 2
                         ]);
+                        $orderData->payment->update([
+                            'status' => 2,
+                        ]);
                         break;
 
                     case self::ORDER_EXPIRED:
                         $orderData->update([
                             'payment_status' => 3
                         ]);
+                        $orderData->payment->update([
+                            'status' => 3,
+                        ]);
                         break;
 
                     default:
                         $orderData->update([
                             'payment_status' => 4
+                        ]);
+                        $orderData->payment->update([
+                            'status' => 4,
                         ]);
                 }
             }
@@ -71,7 +93,12 @@ class PaymentController extends Controller
         ]);
     }
 
-
+    /**
+     * Создание заказа
+     *
+     * @param Order $order
+     * @return void
+     */
     private function createdOrder(
         Order $order
     ): void
@@ -84,19 +111,32 @@ class PaymentController extends Controller
         if (empty($result->id)) {
             return;
         }
-        unset($order->time_after);
 
         $order->iiko_id = $result->id;
         $order->save();
     }
 
+    /**
+     * @param Order $orderData
+     * @param array $order
+     * @return void
+     */
     public function payments(
         Order $orderData,
         array $order
     )
     {
-        Configuration::setMerchantId('1537351');
-        Configuration::setSecretKey('m2fFeTqLLHTWbvShDbYkNqSz7idhEjnx');
+        $transitFop = Fop::query()
+            ->where('is_default', 1)
+            ->latest()
+            ->first();
+
+        if(empty($transitFop)){
+            return;
+        }
+
+        Configuration::setMerchantId($transitFop->code_id);
+        Configuration::setSecretKey($transitFop->code_key);
         Configuration::setApiVersion('2.0');
 
         $payData = [];
@@ -136,6 +176,10 @@ class PaymentController extends Controller
             try {
                 $paymentResponse = \Cloudipsp\Order::settlement($data);
                 $paymentResponse->getData();
+
+                $orderData->payment->update([
+                    'settlement' => 1,
+                ]);
             } catch (ApiException $e) {
                 Log::error('ApiException Error: ' . $e->getMessage());
             }

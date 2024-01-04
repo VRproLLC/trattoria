@@ -2,6 +2,7 @@
 
 namespace App\Payments;
 
+use App\Models\Fop;
 use App\Models\Order\Order;
 use Cloudipsp\Api\Order\Settlements;
 use Cloudipsp\Checkout;
@@ -14,8 +15,20 @@ class Fondy
 {
     public function createdLink(Order $order): array
     {
-        Configuration::setMerchantId('1537351');
-        Configuration::setSecretKey('m2fFeTqLLHTWbvShDbYkNqSz7idhEjnx');
+        $transitFop = Fop::query()
+            ->where('is_default', 1)
+            ->latest()
+            ->first();
+
+        if(empty($transitFop)){
+            return [
+                'status' => 'error',
+                'message' => 'Платежная система не настроена',
+            ];
+        }
+
+        Configuration::setMerchantId($transitFop->code_id);
+        Configuration::setSecretKey($transitFop->code_key);
         Configuration::setApiVersion('2.0');
 
         try {

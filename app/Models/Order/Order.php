@@ -4,6 +4,7 @@ namespace App\Models\Order;
 
 use App\Enums\OrderEnum;
 use App\Models\Organization;
+use App\Models\PaymentOrder;
 use App\Models\PaymentType;
 use App\User;
 use Carbon\Carbon;
@@ -59,6 +60,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function payment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PaymentOrder::class, 'order_id');
     }
 
     public function getIikoOrderNumberAttribute()

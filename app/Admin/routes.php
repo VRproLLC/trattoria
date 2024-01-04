@@ -49,5 +49,6 @@ Route::group([
     $router->resource('payment-types', PaymentTypeController::class);
     $router->resource('notification', NotificationController::class);
     $router->resource('fops', FopController::class);
+    $router->resource('payment-orders', PaymentOrderController::class);
 
 });

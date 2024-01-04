@@ -31,7 +31,7 @@ class SyncController extends Controller
     public function sync(): \Illuminate\Http\RedirectResponse
     {
         SynchronizationIikoJob::dispatch();
-        Cache::set('synchronization', true);
+        Cache::set('synchronization', true, 600);
         return redirect()->back();
     }
 }
