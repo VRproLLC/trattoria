@@ -163,7 +163,6 @@ class DashboardController extends Controller
         if ($order->organization !== null) {
             $iiko = new Iiko($order->organization->account->login, $order->organization->account->password, $order->organization->iiko_id);
             $data = $iiko->updateOrderStatus($order);
-
         }
 
         Notification::send($order->user, new InProgressNotification($order));
