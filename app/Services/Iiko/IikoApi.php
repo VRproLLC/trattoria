@@ -55,7 +55,7 @@ class IikoApi
         );
 
         return $curl
-            ->to($this->url.'deliveries/update_order_delivery_status')
+            ->to($this->url.'deliveries/confirm')
             ->withData($data)
             ->withHeaders($headers)->asJson()
             ->post();

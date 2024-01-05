@@ -58,16 +58,12 @@ class Iiko
     }
 
     public function updateOrderStatus(
-        Order $order,
-        string $status
+        Order $order
     ){
-
         $data = [
             "organizationId" => $this->api->organization,
             "orderId" => $order->iiko_id,
-            "deliveryStatus" => $status,
         ];
-
 
         return $this->api->updateStatusOrder($data);
     }
