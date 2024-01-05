@@ -182,8 +182,6 @@
         @endforeach
     </div>
 </div>
-
-
 <div class="one_admin_block">
     <div class="top_admin_block">
         <p>Готово к доставке</p>

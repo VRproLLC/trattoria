@@ -17,7 +17,9 @@ class SelectedOrganizationMiddleware
     public function handle($request, Closure $next)
     {
         if(empty(Cookie::get('organization_id'))){
-            return redirect()->route('main')->with(['error' => 'Необходимо указать точку выдачи']);
+            return redirect()->route('main')->with([
+                'error' => 'Необходимо указать точку выдачи'
+            ]);
         }
         return $next($request);
     }

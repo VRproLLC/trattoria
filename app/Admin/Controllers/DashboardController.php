@@ -16,6 +16,7 @@ use App\Notifications\OrderFinishNotification;
 use App\Services\CalculatorService;
 use App\Services\Iiko\Iiko;
 use Carbon\Carbon;
+use Encore\Admin\Auth\Permission;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Column;
 use Encore\Admin\Layout\Content;
@@ -30,7 +31,7 @@ class DashboardController extends Controller
 {
     public function index(Content $content): Content
     {
-        if (Admin::user()->isRole('administrator')) {
+        if (Permission::isAdministrator()) {
             $organization = Organization::orderBy('id', 'desc')->get();
         } else $organization = Organization::where('id', Admin::user()->organization_id)->orderBy('id', 'desc')->get();
 
@@ -274,9 +275,12 @@ class DashboardController extends Controller
             $iiko->addOrderItems($order);
         }
 
-        (new OrderController())->calculate_full_price($order);
+        $service = new CalculatorService();
+        $service->calculate_full_price($order);
 
-        event(new NewOrderEvent(['action' => 'update_wrapper']));
+        event(new NewOrderEvent([
+            'action' => 'update_wrapper'
+        ]));
 
         return response()->json(['success' => 'true']);
     }
