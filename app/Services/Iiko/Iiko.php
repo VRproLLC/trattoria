@@ -68,6 +68,17 @@ class Iiko
         return $this->api->updateStatusOrder($data);
     }
 
+    public function cancelConfirm(
+        Order $order
+    ){
+        $data = [
+            "organizationId" => $this->api->organization,
+            "orderId" => $order->iiko_id,
+        ];
+
+        return $this->api->cancelConfirm($data);
+    }
+
     public function getStatus(
         Order $order
     ){

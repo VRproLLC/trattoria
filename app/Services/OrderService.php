@@ -39,24 +39,30 @@ class OrderService
 
     /**
      * @param Order $order
-     * @return bool
+     * @return array
      */
     public function createdOrderToIiko(
         Order $order
-    ): bool
+    ): array
     {
         $organization = Organization::where('id', Cookie::get('organization_id'))->firstOrFail();
 
         $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
         $result = $iiko->addOrder($order);
 
-        if (!isset($result->orderInfo->id)) {
-            return false;
+        if (isset($result->orderInfo->errorInfo) && $result->orderInfo->creationStatus == 'Error') {
+            return [
+                'status' => 'error',
+                'data' => (array) $result->orderInfo->errorInfo
+            ];
         }
 
         $order->iiko_id = $result->orderInfo->id;
         $order->save();
 
-        return true;
+        return [
+            'status' => 'success',
+            'data' => (array) $result->orderInfo
+        ];
     }
 }

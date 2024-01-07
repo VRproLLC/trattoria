@@ -34,12 +34,14 @@ class Order extends Model
         'time',
         'deleted_at',
         'is_time',
+        'created_logs'
     ];
 
     protected $dates = ['deleted_at'];
 
     protected $casts = [
         'timestamp_at' => 'array',
+        'created_logs' => 'json',
     ];
 
     public function items(): HasMany

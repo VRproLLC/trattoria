@@ -262,7 +262,11 @@ class OrderController extends Controller
         if ($order->organization->account->is_iiko == 1) {
             $send_order_to_iiko = $service->createdOrderToIiko($order);
 
-            if (!$send_order_to_iiko) {
+            $order->update([
+                'created_logs' => $send_order_to_iiko
+            ]);
+
+            if ($send_order_to_iiko['status'] == 'error') {
                 return redirect()->route('menu.index')->with(['error' => 'Произошла ошибка при создании заказа']);
             }
 

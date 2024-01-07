@@ -32,7 +32,7 @@ class PaymentController extends Controller
      * @return JsonResponse
      */
     public function webhook(
-        Request $request
+        Request $request,
     )
     {
         $order = json_decode(base64_decode($request->get('data')), true);
@@ -108,10 +108,23 @@ class PaymentController extends Controller
         $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
         $result = $iiko->addOrder($order, true, false, true, true)->orderInfo;
 
-        if (empty($result->id)) {
+        if (isset($result->orderInfo->errorInfo) && $result->orderInfo->creationStatus == 'Error') {
+            $order->update([
+                'created_logs' => [
+                    'status' => 'error',
+                    'data' => (array) $result->orderInfo->errorInfo
+                ]
+            ]);
             return;
         }
 
+        $order->created_logs = [
+            'created_logs' => [
+                'status' => 'success',
+                'data' => (array) $result->orderInfo
+            ]
+        ];
+        $order->order_status = 1;
         $order->iiko_id = $result->id;
         $order->save();
     }
