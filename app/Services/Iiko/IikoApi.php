@@ -156,11 +156,68 @@ class IikoApi
     public function getCitiesAndStreetsList()
     {
         $curl = new CurlService();
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:10',
+            'Authorization:Bearer '.$this->token
+        );
+        $post = array(
+            'organizationIds' => [$this->organization],
+        );
 
         return $curl
-            ->to($this->url.'/cities/cities?access_token='.$this->token.'&organization='.$this->organization)
-            ->get();
+            ->to($this->url.'cities')
+            ->withData($post)->withHeaders($headers)->asJson()
+            ->post();
     }
+
+    public function getStreetsList(
+        $cityId
+    )
+    {
+        $curl = new CurlService();
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:10',
+            'Authorization:Bearer '.$this->token
+        );
+        $post = array(
+            'organizationId' => $this->organization,
+            'cityId'         => $cityId,
+        );
+
+        return $curl
+            ->to($this->url.'streets/by_city')
+            ->withData($post)->withHeaders($headers)->asJson()
+            ->post();
+    }
+
+    public function getStreetsListById(
+       // $ids,
+        $classifierIds
+    )
+    {
+        $curl = new CurlService();
+        $headers = array(
+            'Content-type:application/json',
+            'Accept:application/json',
+            'Timeout:10',
+            'Authorization:Bearer '.$this->token
+        );
+        $post = array(
+            'organizationId' => $this->organization,
+            'ids'         => [$classifierIds],
+            //'classifierIds'  => [$classifierIds],
+        );
+
+        return $curl
+            ->to($this->url.'streets/by_id')
+            ->withData($post)->withHeaders($headers)->asJson()
+            ->post();
+    }
+
 
     public function getProducts()
     {

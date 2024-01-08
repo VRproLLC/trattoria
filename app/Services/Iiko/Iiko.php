@@ -132,7 +132,6 @@ class Iiko
             "order" => [
                 "id" => $cart->uuid,
                 "phone" => $cart->user->phone,
-                "orderTypeId" => "5b1508f9-fe5b-d6af-cb8d-043af587d5c2",
                 "personsCount" => $cart->number_of_devices,
                 "items" => $items,
                 "customer" => [
@@ -152,11 +151,18 @@ class Iiko
 //            }
 //        }
 
-//        if($cart->is_delivery == 1) {
-//            $data["order"]["orderServiceType"] = 'DeliveryByCourier';
-//        } else {
-//            $data["order"]["orderTypeId"] = '5b1508f9-fe5b-d6af-cb8d-043af587d5c2';
-//        }
+        if($cart->is_delivery == 1) {
+            $data["order"]["orderServiceType"] = 'DeliveryByCourier';
+            $data["order"]["deliveryPoint"]["address"] = [
+                'street' => [
+                    'id' => '6706ae97-4285-cf3e-017b-0bfec1c1e47e',
+                    'city' => 'Харьков'
+                ],
+                'house' => '1'
+            ];
+        } else {
+            $data["order"]["orderTypeId"] = '5b1508f9-fe5b-d6af-cb8d-043af587d5c2';
+        }
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
             $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ":00.000";
@@ -185,7 +191,16 @@ class Iiko
 
     public function getCitiesAndStreetsList()
     {
-        return json_decode($this->api->getCitiesAndStreetsList(), true);
+        return $this->api->getCitiesAndStreetsList();
+    }
+    public function getStreetsList($cityId)
+    {
+        return $this->api->getStreetsList($cityId);
+    }
+
+    public function getStreetsListById($classifierIds)
+    {
+        return $this->api->getStreetsListById($classifierIds);
     }
 
     public function getOrder($guid)

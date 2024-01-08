@@ -57,7 +57,7 @@ class OrderService
             ];
         }
 
-        if (isset($result->error)) {
+        if (isset($result->error) || isset($result->errorDescription)) {
             return [
                 'status' => 'error',
                 'data' => (array) $result
