@@ -115,7 +115,15 @@ class PaymentController extends Controller
             ]);
             return;
         }
-
+        if (isset($result->error) || isset($result->errorDescription)) {
+            $order->update([
+                'created_logs' => [
+                    'status' => 'error',
+                    'data' => (array) $result
+                ]
+            ]);
+            return;
+        }
         $order->created_logs = [
             'created_logs' => [
                 'status' => 'success',
