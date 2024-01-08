@@ -118,6 +118,11 @@ class WebhookController extends Controller
             return false;
         }
 
+        if ($status == OrderEnum::$IIKO_TRANSPORT_UNCONFIRMED) {
+            $order->order_status = OrderEnum::$NEW_ORDER;
+            $order->save();
+        }
+
         if ($status == OrderEnum::$IIKO_TRANSPORT_COOKING_STARTED) {
             $order->order_status = OrderEnum::$IN_PROCESS;
             $order->timestamp_at = collect($order->timestamp_at)->merge([

@@ -36,6 +36,7 @@ class OrderEnum
     public static $IIKO_TRANSPORT_COOKING_COMPLETED = 'CookingCompleted';
     public static $IIKO_TRANSPORT_CLOSED = 'Closed';
     public static $IIKO_TRANSPORT_CANCELLED = 'Cancelled';
+    public static $IIKO_TRANSPORT_UNCONFIRMED = 'Unconfirmed';
 
     public static $IIKO_STATUSES = [
         'NEW' => 1,
