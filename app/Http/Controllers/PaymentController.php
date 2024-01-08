@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Fop;
 use App\Models\Order\Order;
 use App\Models\Organization;
 use App\Services\Iiko\Iiko;
-use Cloudipsp\Configuration;
-use Cloudipsp\Exception\ApiException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -32,7 +27,7 @@ class PaymentController extends Controller
      * @return JsonResponse
      */
     public function webhook(
-        Request $request,
+        Request $request
     )
     {
         $order = json_decode(base64_decode($request->get('data')), true);
@@ -54,10 +49,10 @@ class PaymentController extends Controller
 
                         $orderData->payment->update([
                             'status' => 1,
+                            'payments' => $order
                         ]);
 
                         $this->createdOrder($orderData);
-                        $this->payments($orderData, $order);
                         break;
 
                     case self::ORDER_DECLINED:
@@ -66,6 +61,7 @@ class PaymentController extends Controller
                         ]);
                         $orderData->payment->update([
                             'status' => 2,
+                            'payments' => $order
                         ]);
                         break;
 
@@ -75,6 +71,7 @@ class PaymentController extends Controller
                         ]);
                         $orderData->payment->update([
                             'status' => 3,
+                            'payments' => $order
                         ]);
                         break;
 
@@ -84,6 +81,7 @@ class PaymentController extends Controller
                         ]);
                         $orderData->payment->update([
                             'status' => 4,
+                            'payments' => $order
                         ]);
                 }
             }
@@ -127,75 +125,5 @@ class PaymentController extends Controller
         $order->order_status = 1;
         $order->iiko_id = $result->id;
         $order->save();
-    }
-
-    /**
-     * @param Order $orderData
-     * @param array $order
-     * @return void
-     */
-    public function payments(
-        Order $orderData,
-        array $order
-    )
-    {
-        $transitFop = Fop::query()
-            ->where('is_default', 1)
-            ->latest()
-            ->first();
-
-        if(empty($transitFop)){
-            return;
-        }
-
-        Configuration::setMerchantId($transitFop->code_id);
-        Configuration::setSecretKey($transitFop->code_key);
-        Configuration::setApiVersion('2.0');
-
-        $payData = [];
-
-        foreach ($orderData->items as $item){
-            $fop = Fop::query()
-                ->where('is_active', 1)
-                ->whereJsonContains('category', (string) $item->product->categoryPayId)
-                ->first();
-
-            if(isset($fop)){
-                $payData[$fop->id][$item->id] = $item->product->price;
-            }
-        }
-
-        $receiver = [];
-
-        foreach ($payData as $key => $value){
-            $receiver[] = [
-                'requisites' => [
-                    'amount' => array_sum($value) * 100,
-                    'merchant_id' => Fop::find($key)->code_id,
-                ],
-                'type' => 'merchant'
-            ];
-        }
-
-        if (count($receiver)) {
-            $data = [
-                'operation_id' => $order['order_id'],
-                'currency' => 'UAH',
-                'amount' => $order['amount'],
-                'order_desc' => 'Разбитие счета',
-            ];
-            $data['receiver'] = $receiver;
-
-            try {
-                $paymentResponse = \Cloudipsp\Order::settlement($data);
-                $paymentResponse->getData();
-
-                $orderData->payment->update([
-                    'settlement' => 1,
-                ]);
-            } catch (ApiException $e) {
-                Log::error('ApiException Error: ' . $e->getMessage());
-            }
-        }
     }
 }

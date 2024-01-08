@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\SettlementCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -13,7 +14,6 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
     ];
 
     /**
@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('zbara:time-work')->everyFiveMinutes();
         $schedule->command('zbara:notifications')->everyMinute();
         $schedule->command('trattoria:synchronization')->everyThreeHours();
+        $schedule->command('trattoria:settlement')->everyThreeHours();
     }
 
     /**

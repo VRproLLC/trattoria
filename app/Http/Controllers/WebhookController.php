@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderEnum;
 use App\Models\Order\Order;
+use App\Models\Order\OrderItem;
 use App\Models\Organization;
 use App\Models\Product\Product;
 use App\Notifications\InProgressNotification;
 use App\Notifications\OrderCancellationNotification;
 use App\Notifications\OrderFinishNotification;
+use App\Services\CalculatorService;
 use App\Services\IikoService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
@@ -33,6 +36,7 @@ class WebhookController extends Controller
                         }
                         $order->save();
 
+                        $this->orderItemsUpdate($event_info);
                         $this->send_order_status_notification($event_info['id'], $event_info['order']['status']);
                     }
                 }
@@ -49,6 +53,55 @@ class WebhookController extends Controller
         return response()->json('success', 200);
     }
 
+    /**
+     * Обновление данных заказа.
+     *
+     * @param $event
+     * @return void
+     */
+    private function orderItemsUpdate($event)
+    {
+        $order = Order::where('iiko_id', $event['id'])->first();
+
+        if(count($event['order']['items'])){
+            foreach ($event['order']['items'] as $item){
+                $orderItem = OrderItem::query()
+                    ->where('order_id', $order->id)
+                    ->whereHas('product', function (Builder $query) use ($item) {
+                        $query->where('iiko_id', $item['product']['id']);
+                    })
+                    ->first();
+
+                if(empty($orderItem)){
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'comment' => $item['comment'],
+                        'product_id' => Product::query()->where('iiko_id', $item['product']['id'])->first()->id,
+                        'amount' => $item['amount'],
+                        'price_per_one' => $item['price'],
+                        'is_status' => 1
+                    ]);
+                } else {
+                    $orderItem->update([
+                        'is_status' => 1,
+                        'amount' => $item['amount'],
+                        'price_per_one' => $item['price'],
+                        'comment' => $item['comment'],
+                    ]);
+                }
+            }
+
+            (new CalculatorService())->calculate_full_price($order);
+        }
+    }
+
+    /**
+     * Обновление статуса
+     *
+     * @param $order_id
+     * @param $status
+     * @return bool
+     */
     public function send_order_status_notification($order_id, $status)
     {
         $order = Order::where('iiko_id', $order_id)->first();
@@ -95,14 +148,18 @@ class WebhookController extends Controller
         return true;
     }
 
-
+    /**
+     * @param $organization_id
+     * @return false|void
+     */
     public function update_stop_list($organization_id)
     {
         $organization = Organization::where('iiko_id', $organization_id)->first();
 
-        if (!$organization) {
+        if (empty($organization)) {
             return false;
         }
+
         $products = Product::where('organization_id', $organization->id)->where('in_stop_list', 1)->get();
 
         foreach ($products as $product) {

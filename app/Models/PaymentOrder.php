@@ -18,6 +18,10 @@ class PaymentOrder extends Model
         'payments',
     ];
 
+    protected $casts = [
+        'payments' => 'json',
+    ];
+
     public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id');
