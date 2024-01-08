@@ -141,16 +141,6 @@ class Iiko
             ]
         ];
 
-//        if ($cart->organization->delivery_types !== null){
-//            $delivery = $cart->organization->delivery_types
-//                ->where('orderServiceType', OrderEnum::$DELIVERY[$cart->is_delivery])
-//                ->first();
-//
-//            if(isset($delivery->id)){
-//                $data["order"]["orderTypeId"] = $delivery->uuid;
-//            }
-//        }
-
         if($cart->is_delivery == 1) {
             $data["order"]["orderServiceType"] = 'DeliveryByCourier';
             $data["order"]["deliveryPoint"]["address"] = [

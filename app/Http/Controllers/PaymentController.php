@@ -104,7 +104,7 @@ class PaymentController extends Controller
         $organization = Organization::where('id', $order->organization_id)->firstOrFail();
 
         $iiko = new Iiko($organization->account->login, $organization->account->password, $organization->iiko_id);
-        $result = $iiko->addOrder($order, true, false, true, true)->orderInfo;
+        $result = $iiko->addOrder($order, true, false, true, true);
 
         if (isset($result->orderInfo->errorInfo) && $result->orderInfo->creationStatus == 'Error') {
             $order->update([
@@ -115,6 +115,7 @@ class PaymentController extends Controller
             ]);
             return;
         }
+
         if (isset($result->error) || isset($result->errorDescription)) {
             $order->update([
                 'created_logs' => [
@@ -124,6 +125,7 @@ class PaymentController extends Controller
             ]);
             return;
         }
+
         $order->created_logs = [
             'created_logs' => [
                 'status' => 'success',
