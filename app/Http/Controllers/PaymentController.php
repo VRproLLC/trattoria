@@ -133,7 +133,7 @@ class PaymentController extends Controller
             ]
         ];
         $order->order_status = 1;
-        $order->iiko_id = $result->id;
+        $order->iiko_id = $result->orderInfo->id;
         $order->save();
     }
 }
