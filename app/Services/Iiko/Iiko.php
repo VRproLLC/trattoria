@@ -142,19 +142,21 @@ class Iiko
             ]
         ];
 
-        if ($cart->organization->delivery_types !== null){
-            $delivery = $cart->organization->delivery_types
-                ->where('orderServiceType', OrderEnum::$DELIVERY[$cart->is_delivery])
-                ->first();
-
+//        if ($cart->organization->delivery_types !== null){
+//            $delivery = $cart->organization->delivery_types
+//                ->where('orderServiceType', OrderEnum::$DELIVERY[$cart->is_delivery])
+//                ->first();
+//
 //            if(isset($delivery->id)){
 //                $data["order"]["orderTypeId"] = $delivery->uuid;
 //            }
-        }
+//        }
 
-        if($cart->is_delivery == 1) {
-           // $data["order"]["orderTypeId"] = 'DeliveryByCourier';
-        }
+//        if($cart->is_delivery == 1) {
+//            $data["order"]["orderServiceType"] = 'DeliveryByCourier';
+//        } else {
+//            $data["order"]["orderTypeId"] = '5b1508f9-fe5b-d6af-cb8d-043af587d5c2';
+//        }
 
         if ($cart->is_time == 2 && $cart->date && $cart->time && $cart->time != '00:00') {
             $data['order']["completeBefore"] = $cart->date . " " . $cart->time . ":00.000";

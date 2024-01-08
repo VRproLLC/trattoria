@@ -57,6 +57,13 @@ class OrderService
             ];
         }
 
+        if (isset($result->error)) {
+            return [
+                'status' => 'error',
+                'data' => (array) $result
+            ];
+        }
+
         $order->iiko_id = $result->orderInfo->id;
         $order->save();
 

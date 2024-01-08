@@ -36,8 +36,11 @@ class WebhookController extends Controller
                         }
                         $order->save();
 
-                        $this->orderItemsUpdate($event_info);
                         $this->send_order_status_notification($event_info['id'], $event_info['order']['status']);
+
+                        if(in_array($event_info['order']['status'], ['Unconfirmed', 'WaitCooking', 'ReadyForCooking', 'CookingStarted'])) {
+                            $this->orderItemsUpdate($event_info);
+                        }
                     }
                 }
 
@@ -73,14 +76,19 @@ class WebhookController extends Controller
                     ->first();
 
                 if(empty($orderItem)){
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'comment' => $item['comment'],
-                        'product_id' => Product::query()->where('iiko_id', $item['product']['id'])->first()->id,
-                        'amount' => $item['amount'],
-                        'price_per_one' => $item['price'],
-                        'is_status' => 1
-                    ]);
+
+                    $productInfo = Product::query()->where('iiko_id', $item['product']['id'])->first();
+
+                    if(isset($productInfo)) {
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'comment' => $item['comment'],
+                            'product_id' => $productInfo->id,
+                            'amount' => $item['amount'],
+                            'price_per_one' => $item['price'],
+                            'is_status' => 1
+                        ]);
+                    }
                 } else {
                     $orderItem->update([
                         'is_status' => 1,
