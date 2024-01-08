@@ -32,15 +32,17 @@ class Fondy
         Configuration::setSecretKey($transitFop->code_key);
         Configuration::setApiVersion('2.0');
 
+        $fullPrice = $order->full_price + $order->delivery_price ?? 0;
+
         try {
             $data = [
                 'order_desc' => 'Оплата замовлення в Trattoria',
                 'currency' => 'UAH',
-                'amount' => $order->full_price * 100,
+                'amount' => $fullPrice * 100,
                 'response_url' =>  route('pay-status'),
                 'server_callback_url' =>  route('webhook.fondy'),
                 'product_id' => $order->uuid,
-                'lifetime' => 36000,
+                'lifetime' => 600,
                 'merchant_data' => array(
                     'order_id' => $order->uuid,
                 )
@@ -95,6 +97,20 @@ class Fondy
 
             if(isset($fop)){
                 $payData[$fop->id][$item->id] = $item->product->price;
+            }
+        }
+
+        /**
+         * Доставка разбитие.
+         */
+        if ($orderData->is_delivery === 1) {
+            $fop = Fop::query()
+                ->where('is_active', 1)
+                ->whereJsonContains('category', (string)'delivery')
+                ->first();
+
+            if (isset($fop)) {
+                $payData[$fop->id][] = $orderData->delivery_price;
             }
         }
 

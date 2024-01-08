@@ -30,6 +30,7 @@ class OrderUpdateRequest extends FormRequest
             'time' => 'nullable|string|max:200',
             'is_delivery' => 'required|integer',
             'time_issue' => 'required|integer',
+            'delivery_price' => 'nullable|string',
         ];
     }
 }

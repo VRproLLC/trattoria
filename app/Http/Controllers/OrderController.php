@@ -361,6 +361,7 @@ class OrderController extends Controller
         $order->address = $request->get('address');
         $order->is_time = $request->get('time_issue');
         $order->time = $request->get('time');
+        $order->delivery_price = $request->get('delivery_price');
         $order->save();
 
         return response()->json([

@@ -116,108 +116,131 @@
                                     </div>
                                 </div>
 -->
-                            </div>
-                            <div class="textarea_comment_wrap">
-                                <p class="title_other_page">{{trans('main.comment_order')}}:</p>
-                                <div class="wrap_textarea_comment">
-                                    <textarea name="comment">{{$order->comment}}</textarea>
-                                    @include('partials.errors.default', ['name' => 'comment'])
-                                </div>
-                            </div>
-                            <div class="issue_delivery">
-                                <p class="title_other_page">Доставка:</p>
-                                <div class="line_wrap_checkbox time_check">
-                                    <label class="line_one_checkbox">
-                                        <input type="radio" name="is_delivery" value="1" {{old('is_delivery', 1) == 1 || $order->is_delivery == 1  ? 'checked' : '' }}>
-                                        <span></span>
-                                        <p>Доставка</p>
-                                    </label>
-                                    <label class="line_one_checkbox">
-                                        <input type="radio" name="is_delivery" value="2" {{old('is_delivery') == 2 || $order->is_delivery == 2  ? 'checked' : '' }}>
-                                        <span></span>
-                                        <p>Самовывоз</p>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="show_hide_field_addr" @if( $order->is_delivery == 2) style="display: none" @endif">
-                                <p class="title_other_page">Адрес доставки:</p>
-                                <div class="wrap_input_delivery_enter">
-                                    <input type="text" class="" name="address" value="{{ $order->address  }}" id="google_autocomplete_input">
-                                    <div class="toggle_show_addr">
+                                    </div>
+                                    <div class="textarea_comment_wrap">
+                                        <p class="title_other_page">{{trans('main.comment_order')}}:</p>
+                                        <div class="wrap_textarea_comment">
+                                            <textarea name="comment">{{$order->comment}}</textarea>
+                                            @include('partials.errors.default', ['name' => 'comment'])
+                                        </div>
+                                    </div>
+                                    <div class="issue_delivery">
+                                        <p class="title_other_page">Доставка:</p>
+                                        <div class="line_wrap_checkbox time_check">
+                                            <label class="line_one_checkbox">
+                                                <input type="radio" name="is_delivery"
+                                                       value="1" {{old('is_delivery', 1) == 1 || $order->is_delivery == 1  ? 'checked' : '' }}>
+                                                <span></span>
+                                                <p>Доставка</p>
+                                            </label>
+                                            <label class="line_one_checkbox">
+                                                <input type="radio" name="is_delivery"
+                                                       value="2" {{old('is_delivery') == 2 || $order->is_delivery == 2  ? 'checked' : '' }}>
+                                                <span></span>
+                                                <p>Самовывоз</p>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="show_hide_field_addr"
+                                         @if( $order->is_delivery == 2) style="display: none" @endif">
+                                    <p class="title_other_page">Адрес доставки:</p>
+                                    <div class="wrap_input_delivery_enter">
+                                        <input type="text" class="" name="address" value="{{ $order->address  }}"
+                                               id="google_autocomplete_input">
+                                        <div class="toggle_show_addr">
+                                        </div>
+                                    </div>
+                                    <div class="total_sum_delivery">
+                                        <p>Стоимость доставки:</p>
+                                        <div class="apend_sum_del">
+                                            <span class="sum_delivery">{{ $order->delivery_price }}</span> ₴
+                                        </div>
+                                        <input type="hidden" name="delivery_price"
+                                               value="{{ $order->delivery_price ?? 0}}">
                                     </div>
                                 </div>
-                                <div class="total_sum_delivery">
-                                    <p>Стоимость доставки:</p>
-                                    <div class="apend_sum_del">
-                                        <span class="sum_delivery">0</span> грн
+                                <div class="issue_time">
+                                    <p class="title_other_page">{{trans('main.time_issue')}}:</p>
+                                    <div class="line_wrap_checkbox time_check">
+                                        <label class="line_one_checkbox">
+                                            <input type="radio" name="time_issue"
+                                                   value="1" {{old('time_issue', 1) == 1 || $order->is_time == 1 ? 'checked' : '' }}>
+                                            <span></span>
+                                            <p>{{trans('main.time_now')}}</p>
+                                        </label>
+                                        <label class="line_one_checkbox">
+                                            <input type="radio" name="time_issue" value="2"
+                                                   {{old('time_issue')==2  || $order->is_time == 2 ? 'checked' : '' }} class="time_step">
+                                            <span></span>
+                                            <p>{{trans('main.specify_time')}}</p>
+                                        </label>
+                                        @include('partials.errors.default', ['name' => 'time_issue'])
                                     </div>
-                                </div>
-                            </div>
-                            <div class="issue_time">
-                                <p class="title_other_page">{{trans('main.time_issue')}}:</p>
-                                <div class="line_wrap_checkbox time_check">
-                                    <label class="line_one_checkbox">
-                                        <input type="radio" name="time_issue" value="1" {{old('time_issue', 1) == 1 || $order->is_time == 1 ? 'checked' : '' }}>
-                                        <span></span>
-                                        <p>{{trans('main.time_now')}}</p>
-                                    </label>
-                                    <label class="line_one_checkbox">
-                                        <input type="radio" name="time_issue" value="2" {{old('time_issue')==2  || $order->is_time == 2 ? 'checked' : '' }} class="time_step">
-                                        <span></span>
-                                        <p>{{trans('main.specify_time')}}</p>
-                                    </label>
-                                    @include('partials.errors.default', ['name' => 'time_issue'])
-                                </div>
-                                <div class="show_time">
-                                    @if($order->time !== null && strtotime($order->time) > strtotime('00:00:00'))
-                                        <input type="text" name="time" value="{{\Carbon\Carbon::parse($order->time)->format('H:i')}}" id="example" placeholder="{{ trans('main.select_time') }}">
+                                    <div class="show_time">
+                                        @if($order->time !== null && strtotime($order->time) > strtotime('00:00:00'))
+                                            <input type="text" name="time"
+                                                   value="{{\Carbon\Carbon::parse($order->time)->format('H:i')}}"
+                                                   id="example" placeholder="{{ trans('main.select_time') }}">
+                                            @include('partials.errors.default', ['name' => 'time'])
+                                        @else
+                                            <input type="text" name="time" value="{{ old('time') }}" id="example"
+                                                   placeholder="{{ trans('main.select_time') }}">
+                                        @endif
                                         @include('partials.errors.default', ['name' => 'time'])
-                                    @else
-                                        <input type="text" name="time" value="{{ old('time') }}" id="example" placeholder="{{ trans('main.select_time') }}">
-                                    @endif
-                                    @include('partials.errors.default', ['name' => 'time'])
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="issue_time">
-                                <p class="title_other_page">{{trans('main.method_pay')}}:</p>
-                                <div class="line_wrap_checkbox">
-                                    @if(empty($order->payment_type_id))
-                                        @foreach($organization->payment_types->where('isDeleted', 0) as $payment_type)
-                                            <label class="line_one_checkbox">
-                                                <input class="pay_cash_card" type="radio" name="payment_type" {{$loop->first ? 'checked' : ''}} value="{{$payment_type->id}}" data-pay="{{ $payment_type->code }}">
-                                                <span></span>
-                                                <p>{{$payment_type->name}}</p>
-                                            </label>
-                                        @endforeach
-                                    @else
-                                        @foreach($organization->payment_types->where('isDeleted', 0) as $payment_type)
-                                            <label class="line_one_checkbox">
-                                                <input class="pay_cash_card" type="radio" name="payment_type" {{$payment_type->id == $order->payment_type_id ? 'checked' : ''}} value="{{$payment_type->id}}" data-pay="{{ $payment_type->code }}">
-                                                <span></span>
-                                                <p>{{$payment_type->name}}</p>
-                                            </label>
-                                        @endforeach
-                                    @endif
+                                <div class="issue_time">
+                                    <p class="title_other_page">{{trans('main.method_pay')}}:</p>
+                                    <div class="line_wrap_checkbox">
+                                        @if(empty($order->payment_type_id))
+                                            @foreach($organization->payment_types->where('isDeleted', 0) as $payment_type)
+                                                <label class="line_one_checkbox">
+                                                    <input class="pay_cash_card" type="radio" name="payment_type"
+                                                           {{$loop->first ? 'checked' : ''}} value="{{$payment_type->id}}"
+                                                           data-pay="{{ $payment_type->code }}">
+                                                    <span></span>
+                                                    <p>{{$payment_type->name}}</p>
+                                                </label>
+                                            @endforeach
+                                        @else
+                                            @foreach($organization->payment_types->where('isDeleted', 0) as $payment_type)
+                                                <label class="line_one_checkbox">
+                                                    <input class="pay_cash_card" type="radio" name="payment_type"
+                                                           {{$payment_type->id == $order->payment_type_id ? 'checked' : ''}} value="{{$payment_type->id}}"
+                                                           data-pay="{{ $payment_type->code }}">
+                                                    <span></span>
+                                                    <p>{{$payment_type->name}}</p>
+                                                </label>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                    @include('partials.errors.default', ['name' => 'payment_type'])
                                 </div>
-                                @include('partials.errors.default', ['name' => 'payment_type'])
-                            </div>
-                            <button class="submit_checkout_button show_hide_field_send" type="submit">
-                                <div class="lds-spinner">
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                    <div></div>
-                                </div>{{trans('main.subscribe')}}
-                            </button>
 
+                                <div class="issue_time total_sum_block show_hide_field_send_pay" style="display: none">
+                                    <div class="total_sum_delivery">
+                                        <p>Стоимость заказа:</p>
+                                        <div class="apend_sum_del">
+                                            <span class="total_sum">{{ $order->full_price + $order->delivery_price ?? 0 }}</span> ₴
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="submit_checkout_button show_hide_field_send" type="submit">
+                                    <div class="lds-spinner">
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                        <div></div>
+                                    </div>{{trans('main.subscribe')}}
+                                </button>
                                 <a class="submit_checkout_button show_hide_field_send_pay" style="display: none"
                                    href="{{ route('order.fondy', ['id' => $order->id]) }}">
                                     <div class="lds-spinner">
@@ -235,34 +258,32 @@
                                         <div></div>
                                     </div>{{trans('main.pay_button')}}
                                 </a>
-
                                 <div class="red_remove_new_order_cart">
                                     {{trans('main.clear_cart_button')}}
                                 </div>
+                            </form>
                         </div>
-                        </form>
-                </div>
-                @else
-                    @if(!session()->has('prevent_back'))
-                        <div class="cart_image_red_text">
-                            <img src="{{asset('image/icon_empty_basket.svg')}}" alt="">
-                            <p class="big_red_text">{{trans('main.cart_empty_red')}}</p>
-                            <a href="{{route('main')}}" class="big_red_link">{{trans('main.main_step')}}</a>
-                        </div>
+                    @else
+                        @if(!session()->has('prevent_back'))
+                            <div class="cart_image_red_text">
+                                <img src="{{asset('image/icon_empty_basket.svg')}}" alt="">
+                                <p class="big_red_text">{{trans('main.cart_empty_red')}}</p>
+                                <a href="{{route('main')}}" class="big_red_link">{{trans('main.main_step')}}</a>
+                            </div>
 
+                        @endif
+                        @if(session()->has('prevent_back'))
+                            <div class="cart_image_red_text">
+                                <img src="{{asset('image/icon_success_basket.svg')}}" alt="">
+                                <p class="big_red_text">{{trans('main.cart_success_text_empty')}}</p>
+                                <a href="{{route('main')}}"
+                                   class="big_red_link">{{trans('main.next_after_complete_order')}}</a>
+                            </div>
+                        @endif
                     @endif
-                    @if(session()->has('prevent_back'))
-                        <div class="cart_image_red_text">
-                            <img src="{{asset('image/icon_success_basket.svg')}}" alt="">
-                            <p class="big_red_text">{{trans('main.cart_success_text_empty')}}</p>
-                            <a href="{{route('main')}}"
-                               class="big_red_link">{{trans('main.next_after_complete_order')}}</a>
-                        </div>
-                    @endif
-                @endif
+                </div>
             </div>
         </div>
-    </div>
     </div>
     <script
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQwPhADcjl2Z0SUT7D-vRfd-0xTB-d76w&libraries=visualization,geometry,drawing,places"></script>
@@ -376,6 +397,13 @@
 
                     if (distance > 0) {
                         document.querySelector('.sum_delivery').textContent = Math.round(distance * {{ $organization->delivery ?? 8 }});
+                        document.querySelector('input[name="delivery_price"]').value = Math.round(distance * {{ $organization->delivery ?? 8 }});
+
+                        let total_price = document.querySelector('.append_total_price').innerText.replace(' ₴', '');
+
+                        document.querySelector('.total_sum').textContent = Math.round(distance * {{ $organization->delivery ?? 8 }} + parseInt(total_price));
+
+                        formOrderUpdate();
                     }
                 }
             });

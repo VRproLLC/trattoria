@@ -34,7 +34,8 @@ class Order extends Model
         'time',
         'deleted_at',
         'is_time',
-        'created_logs'
+        'created_logs',
+        'delivery_price'
     ];
 
     protected $dates = ['deleted_at'];
